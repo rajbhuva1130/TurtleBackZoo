@@ -7,6 +7,6 @@ This repository manages the development for turtle back zoo project application
 
 ## shrey got it
 
-## final 2 person got it
+## final 3 person got it
 
 ## test_1
