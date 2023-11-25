@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'home.apps.HomeConfig',
     'DailyZooAcitvity.apps.DailyzooacitvityConfig',
     'AssetManagement.apps.AssetmanagementConfig',
+    'ManagementAndReporting.apps.ManagementandreportingConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
