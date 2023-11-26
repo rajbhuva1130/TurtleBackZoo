@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<html>
+<head>
+    <title>Asset Page</title>
+</head>
+<body>
+    <div class="container">
+            <h1>Asset Management</h1>
+            <h1>hello {{name}} !!!</h1>
+            <ul>
+                <li><a href="{% url 'building_actions' %}">Building</a></li>
+                <li><a href="{% url 'employee_actions' %}">Employees</a></li>
+                <li><a href="{% url 'attraction_actions' %}">Attractions</a></li>
+                <li><a href="{% url 'concession_actions' %}">Concession</a></li>
+            </ul>
+    </div>
+</body>
+</html>
+
+{% endblock %}
