@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Add Building
+{% endblock %}
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% block content %}
+    <h1>Add Building</h1>
+    <form action="{% url 'add_building' %}" method="post">
+        {% csrf_token %}
+        <label for="building_name">Building Name:</label>
+        <input type="text" id="building_name" name="building_name" required>
+        
+        <label for="purpose">Purpose:</label>
+        <input type="text" id="purpose" name="purpose" required>
+        
+        <label for="floors">Floors:</label>
+        <input type="number" id="floors" name="floors" required>
+        
+        <input type="submit" value="Add Building">
+    </form>
+    <a href="{% url 'building_actions' %}" class="button">Back</a>
+{% endblock %}

@@ -18,4 +18,4 @@ def management_and_reporting(request):
 
 
 def home(request):
-    return render(request,'home.html',{'name':'RAJ'})
+    return render(request,'home.html',{'name':'Monil'})
