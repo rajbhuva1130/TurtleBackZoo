@@ -68,26 +68,43 @@ def add_building(request):
             return render(request, 'asset_management/add_building.html')
 
 def edit_building(request, name):
-    # Logic for building actions
-    return render(request, 'asset_management/edit_building.html',{'building_name':name})
-
-# def edit_building(request, name):
-#     if request.method == 'GET':
-#         query = "SELECT * FROM building WHERE building_name = %s;"  # Define your SQL query here
-#         results, success = execute_query(query, name, query_type="SELECT")
-
-#         if success:
-#             columns = ['ID', 'name', 'purpose', 'floors']  # Define column names for reference
+    if request.method == 'GET':
+        query = "SELECT * FROM building WHERE building_name = %s;"  # Define your SQL query here
+        results, success = execute_query(query, name, query_type="SELECT")
+        print("printing Success",success,results)
+        if success:
+            columns = ['ID', 'name', 'purpose', 'floors']  # Define column names for reference
             
-#             # Restructuring the data for easier access in the template
-#             buildings = []
-#             for row in results:
-#                 building = dict(zip(columns, row))  # Creating a dictionary for each row
-#                 buildings.append(building)
+            # Restructuring the data for easier access in the template
+            buildings = []
+            for row in results:
+                building = dict(zip(columns, row))  # Creating a dictionary for each row
+                buildings.append(building)
             
-#             return render(request, 'asset_management/edit_building.html', {'buildings': buildings})
-#         else:
-#             return render(request, 'error.html')  # Render an error page or handle failure accordingly
+            # return render(request, 'asset_management/edit_building.html', {'buildings': buildings})
+        
+            return render(request, 'asset_management/edit_building.html',{'building_old_name':name,'buildings': buildings})
+        else:
+            return render(request, 'error.html')  # Render an error page or handle failure accordingly
+    
+    elif request.method == 'POST':
+        building_name = request.POST.get('building_name')
+        purpose = request.POST.get('purpose')
+        floors = request.POST.get('floors')
+        
+        # Update building information
+        query_update = "UPDATE building SET building_name = %s, purpose = %s, floors = %s WHERE building_name = %s"
+        success = execute_query(query_update, building_name, purpose, floors, name, query_type="UPDATE")
+        print("printing Success",success)
+        
+        if success:
+            messages.success(request, 'Building updated successfully!')
+            return redirect('building_actions')
+        else:
+            messages.error(request, 'Failed to update building!')
+            return render(request, 'asset_management/edit_building.html', {'building_name': name})
+           
+        
 
     
     
