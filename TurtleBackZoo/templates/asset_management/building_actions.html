@@ -52,8 +52,16 @@
                         <td>{{ building.purpose }}</td>
                         <td>{{ building.floors }}</td>
                         <td>
-                            <button onclick="location.href='{% url 'edit_building' building.name %}'">Edit</button>
-                            <button onclick="confirmDelete('{{ building.name }}')">Delete</button>
+                            
+                            <form action="{% url 'delete_building' building.name %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" onclick="return confirm('Are you sure you want to delete {{ building.name }}?');">Delete</button>
+                            </form>
+                            <form action="{% url 'edit_building' building.name %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="building_name" value="{{ building.name }}">
+                                <button type="submit">Edit</button>
+                            </form>
                         </td>
                     </tr>
                 {% endfor %}
@@ -62,14 +70,15 @@
     </div>
 
     <script>
-        function confirmDelete(buildingName) {
-            if (confirm("Are you sure you want to delete the building '" + buildingName + "'?")) {
-                // Perform delete action (AJAX request or redirect to delete view)
-                // For now, it's just an alert to confirm deletion
-                alert("Deleting building: " + buildingName);
-            }
+        function deleteConfirm(e) {
+            e.preventDefault(); // prevent form submit
+            var confirmation = window.confirm('Are you sure to delete this item?');
+            if (confirmation == true) {
+                $(this).closest("form").submit()
+                } else {
+                    return false;
+                    }
         }
-
     </script>
 </body>
 </html>

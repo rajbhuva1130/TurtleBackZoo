@@ -1,5 +1,20 @@
 {% extends "base.html" %}
 
+{% block title %}
+    Edit Building
+{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
 {% block content %}
-<h1> recieved {{building_name}}</h1>
+    <h1>Update Building  {{building_name}}</h1> 
+
+    
+
 {% endblock %}

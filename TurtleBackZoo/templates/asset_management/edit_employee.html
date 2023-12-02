@@ -1,0 +1,19 @@
+<!-- employee_details.html -->
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Details for Employee {{ employee.id }}</h1>
+    
+    <p>First Name: {{ employee.first_name }}</p>
+    <p>Middle Name: {{ employee.middle_name }}</p>
+    <p>Last Name: {{ employee.last_name }}</p>
+    <p>Email: {{ employee.email }}</p>
+    <p>Phone: {{ employee.phone }}</p>
+    <p>Employee Type: {{ employee.employee_type }}</p>
+    
+    <!-- Add other details you want to display -->
+
+    <!-- Add edit and delete buttons or links if needed -->
+    <button onclick="location.href='{% url 'edit_employee' employee.id %}'">Edit</button>
+    <button onclick="confirmDelete('{{ employee.email }}')">Delete</button>
+{% endblock %}

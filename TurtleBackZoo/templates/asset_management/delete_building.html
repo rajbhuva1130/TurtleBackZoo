@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Building</title>
+</head>
+<body>
+    <h1>Delete Building</h1>
+    
+    <!-- Display the name of the building being deleted -->
+    <p>Are you sure you want to delete the building: <strong>{{ building.name }}</strong>?</p>
+
+    <!-- Delete form -->
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" value="Yes, delete it">
+    </form>
+
+    <!-- Cancel button (redirects to another page, for example, the building list) -->
+    <a href="{% url 'building_actions' %}">Cancel</a>
+</body>
+</html>
