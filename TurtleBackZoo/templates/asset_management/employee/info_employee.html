@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Info of Employee
+{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+    <h1>Info Employee: {{ employee.first_name }} {{ employee.last_name }}</h1>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employee_data %}
+                    <tr>
+                        <td>Employee Number</td>
+                        <td>{{ employee.emp_number }}</td>
+                    </tr>
+                    <tr>
+                        <td>First Name</td>
+                        <td>{{ employee.first_name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Middle Name</td>
+                        <td>{{ employee.middle_name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Last Name</td>
+                        <td>{{ employee.last_name }}</td>
+                    </tr>
+                
+                    <tr>
+                        <td>Street</td>
+                        <td>{{ employee.street }}</td>
+                    </tr>
+                    <tr>
+                        <td>City</td>
+                        <td>{{ employee.city }}</td>
+                    </tr>
+                    <tr>
+                        <td>State</td>
+                        <td>{{ employee.state }}</td>
+                    </tr>
+                    <tr>
+                        <td>Country</td>
+                        <td>{{ employee.country }}</td>
+                    </tr>
+                    <tr>
+                        <td>Zipcode</td>
+                        <td>{{ employee.zipcode }}</td>
+                    </tr>
+                    <tr>
+                        <td>Start Date</td>
+                        <td>{{ employee.start_date|date:"Y-m-d" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Email</td>
+                        <td>{{ employee.email }}</td>
+                    </tr>
+                    <tr>
+                        <td>Phone</td>
+                        <td>{{ employee.phone }}</td>
+                    </tr>
+                    <tr>
+                        <td>Supervisor Name</td>
+                        <td>{{ employee.supervisor_name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Employee Type</td>
+                        <td>{{ employee.employee_type }}</td>
+                    </tr>
+
+
+                    {% if employee.employee_type == 'Ticket Sellers' %}
+                        <tr>
+                            <td>Shift</td>
+                            <td>{{ employee.shift }}</td>
+                        </tr>
+                    {% elif employee.employee_type == 'Customer Service' %}
+                        <tr>
+                            <td>Concession Name</td>
+                            <td>{{ employee.concession_name }}</td>
+                        </tr>
+                        
+                    {% elif employee.employee_type == 'Maintenance' %}
+                        <tr>
+                            <td>Specialization</td>
+                            <td>{{ employee.specialization }}</td>
+                        </tr>
+                        
+                    {% elif employee.employee_type == 'Veterinarians' %}
+                        <tr>
+                            <td>License Number</td>
+                            <td>{{ employee.license_number }}</td>
+                        </tr>
+                        <tr>
+                            <td>Degree</td>
+                            <td>{{ employee.degree }}</td>
+                        </tr>
+                        <tr>
+                            <td>Species Name</td>
+                            <td>{{ employee.species_name }}</td>
+                        </tr>
+                        
+                    {% elif employee.employee_type == 'Animal Care' %}
+                        <tr>
+                            <td>Experience</td>
+                            <td>{{ employee.experience }}</td>
+                        </tr>
+                        <tr>
+                            <td>Species Name</td>
+                            <td>{{ employee.species_name }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'employee_actions' %}" class="button">Back</a>
+    </div>
+    
+{% endblock %}

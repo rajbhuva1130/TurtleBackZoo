@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Employee</title>
+</head>
+<body>
+    <h1>Delete Employee</h1>
+    
+    <!-- Display the name of the employee being deleted -->
+    <p>Are you sure you want to delete the employee: <strong>{{ employee.name }}</strong>?</p>
+
+    <!-- Delete form -->
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" value="Yes, delete">
+    </form>
+
+    <!-- Cancel button (redirects to another page, for example, the employee list) -->
+    <a href="{% url 'employee_actions' %}">Cancel</a>
+</body>
+</html>

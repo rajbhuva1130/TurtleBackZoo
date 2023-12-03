@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Edit Employee
+{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+    <h1>Edit Employee: {{ employee.first_name }} {{ employee.last_name }}</h1>
+
+    <form action="{% url 'update_employee' employee.employee_number %}" method="post">
+        {% csrf_token %}
+
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" name="first_name" value="{{ employee.first_name }}" required>
+
+        <label for="middle_name">Middle Name:</label>
+        <input type="text" id="middle_name" name="middle_name" value="{{ employee.middle_name }}">
+
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" name="last_name" value="{{ employee.last_name }}" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" value="{{ employee.email }}" required>
+
+        <label for="phone">Phone:</label>
+        <input type="text" id="phone" name="phone" value="{{ employee.phone }}" required>
+
+        <label for="employee_type">Employee Type:</label>
+        <input type="text" id="employee_type" name="employee_type" value="{{ employee.employee_type }}" required>
+
+        <!-- Add other input fields as needed -->
+
+        <input type="submit" value="Update">
+    </form>
+
+    <a href="{% url 'employee_list' %}">Cancel and Return to Employee List</a>
+{% endblock %}

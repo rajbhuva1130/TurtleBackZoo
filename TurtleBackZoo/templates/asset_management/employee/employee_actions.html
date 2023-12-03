@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Actions</title>
+    <style>
+        /* Add your CSS styles here */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>List of Employees</h1>
+            <button onclick="location.href='{% url 'add_employee' %}'">Add New Employee</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>employee_number</th>
+                    <th>first_name</th>
+                    <th>middle_name</th>
+                    <th>last_name</th>
+                    <th>supervisor_name</th>
+                    <th>employee_type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                    <tr>
+                        <td>{{ employee.employee_number }}</td>
+                        <td>{{ employee.first_name }}</td>
+                        <td>{{ employee.middle_name }}</td>
+                        <td>{{ employee.last_name }}</td>
+                        <td>{{ employee.supervisor_name }}</td>
+                        <td>{{ employee.employee_type }}</td>
+                        <td>
+                            <form action="{% url 'delete_employee' employee.employee_number %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" onclick="return confirm('Are you sure you want to delete {{ employee.first_name }}?');">Delete</button>
+                            </form>
+                            <form action="{% url 'edit_employee' employee.employee_number %}" method="get">
+                                {% csrf_token %}
+                                <input type="hidden" name="employee_number" value="{{ employee.employee_number }}">
+                                <button type="submit">Edit</button>
+                            </form>
+                            <form action="{% url 'info_employee' %}" method="get">
+                                <input type="hidden" name="emp_number" value="{{ employee.employee_number }}">
+                                <input type="hidden" name="emp_type" value="{{ employee.employee_type }}">
+                                <button type="submit">View More</button>
+                            </form>
+                            
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+
+{% endblock %}
