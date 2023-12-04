@@ -42,6 +42,7 @@
                     <th>Attraction Name</th>
                     <th>Seats</th>
                     <th>Building name</th>
+                    <th>Attraction Requirements</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -51,6 +52,13 @@
                         <td>{{ attraction.attraction_name }}</td>
                         <td>{{ attraction.seats }}</td>
                         <td>{{ attraction.building_name }}</td>
+                        <td>
+                            {% for requirement in attraction.requirements %}
+                                <p>{{ requirement.species_name }}: {{ requirement.quantity }}</p>
+                            {% empty %}
+                                <p>No requirements</p>
+                            {% endfor %}
+                        </td>
                         <td>
                             <form action="{% url 'delete_attraction' attraction.attraction_name %}" method="post">
                                 {% csrf_token %}

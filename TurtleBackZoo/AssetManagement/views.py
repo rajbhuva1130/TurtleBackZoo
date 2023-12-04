@@ -98,7 +98,7 @@ def edit_building(request, name):
         # Update building information
         query_update = "UPDATE building SET building_name = %s, purpose = %s, floors = %s WHERE building_name = %s"
         success = execute_query(query_update, building_name, purpose, floors, name, query_type="UPDATE")
-        print("printing Success",success)
+    
         
         if success:
             messages.success(request, 'Building updated successfully!')
@@ -698,18 +698,45 @@ def attraction_actions(request):
     query = '''SELECT a.attraction_id, a.attraction_name, a.seats, b.building_name
     FROM attraction a INNER JOIN building b ON a.building_id = b.building_id;''' 
 
-    results, success = execute_query(query, query_type="SELECT")
-
-    if success:
-        columns = ['attraction_id', 'attraction_name', 'seats', 'building_name']  
-        
-        # Restructuring the data for easier access in the template
-        attractions = [dict(zip(columns, row)) for row in results]
-        
-        return render(request, 'asset_management/attraction/attraction_actions.html', {'attractions': attractions})
-    else:
+    attractions_results, attractions_success = execute_query(query, query_type="SELECT")
+    
+    if not attractions_success:
         messages.error(request, "Failed to load attractions.")
-        return render(request, 'error.html')  # Render an error page or handle failure accordingly
+        return render(request, 'error.html')
+
+    attractions_columns = ['attraction_id', 'attraction_name', 'seats', 'building_name']  
+    attractions = [dict(zip(attractions_columns, row)) for row in attractions_results]
+    
+    # Query to fetch requirements for each attraction
+    requirements_query = '''SELECT ar.attraction_id, s.species_name, ar.quantity
+    FROM attraction_requirement ar INNER JOIN species s ON ar.species_id = s.species_id;'''
+    
+    # Execute the query
+    requirements_results, requirements_success = execute_query(requirements_query, query_type="SELECT")
+
+    if not requirements_success:
+        messages.error(request, "Failed to load attraction requirements.")
+        return render(request, 'error.html')
+
+    # Process attractions results
+    attractions = [dict(zip(['attraction_id', 'attraction_name', 'seats', 'building_name'], attraction)) for attraction in attractions_results]
+
+    # Create a dictionary to map attraction IDs to their requirements
+    requirements_mapping = {}
+    for req in requirements_results:
+        attraction_id, species_name, quantity = req
+        if attraction_id in requirements_mapping:
+            requirements_mapping[attraction_id].append({'species_name': species_name, 'quantity': quantity})
+        else:
+            requirements_mapping[attraction_id] = [{'species_name': species_name, 'quantity': quantity}]
+
+    # Add requirements to each attraction in the list
+    for attraction in attractions:
+        attraction_id = attraction['attraction_id']
+        attraction['requirements'] = requirements_mapping.get(attraction_id, [])
+    
+    return render(request, 'asset_management/attraction/attraction_actions.html', {'attractions': attractions})
+    
 
 def add_attraction(request):
     if request.method == 'GET':
@@ -723,9 +750,20 @@ def add_attraction(request):
 
         columns_buildings = ['building_id','building_name']
         buildings = [dict(zip(columns_buildings, row)) for row in buildings]
-
         
-        return render(request, 'asset_management/attraction/add_attraction.html', {'buildings': buildings})
+        # Fetch species from the database
+        species_query = "SELECT species_id, species_name FROM species;"
+        species, species_success = execute_query(species_query, query_type="SELECT")
+
+        if not species_success:
+            messages.error(request, 'Failed to fetch species!')
+            return render(request, 'error.html')
+
+        columns_species = ['species_id', 'species_name']
+        species = [dict(zip(columns_species, row)) for row in species]
+        
+        
+        return render(request, 'asset_management/attraction/add_attraction.html', {'buildings': buildings, 'species': species})
         
     
     if request.method == 'POST':
@@ -737,12 +775,34 @@ def add_attraction(request):
         query_insert = "INSERT INTO attraction (attraction_name, seats, building_id) VALUES (%s, %s, %s)"
         success = execute_query(query_insert, attraction_name, seats, building_id, query_type="INSERT")
 
-        if success:
-            messages.success(request, 'Attraction added successfully!')
-            return redirect('attraction_actions')
-        else:
+        if not success:
             messages.error(request, 'Failed to add attraction!')
             return render(request, 'asset_management/attraction/add_attraction.html')
+
+        # Retrieve species and quantity for the requirement
+        species_id = request.POST.get('species_id')
+        quantity = request.POST.get('quantity')
+        
+        #get attraction_id from attraction_name
+        get_attraction_id_query = "SELECT attraction_id FROM attraction WHERE attraction_name = %s;"
+        attraction_id_results, attraction_id_success = execute_query(get_attraction_id_query, attraction_name, query_type="SELECT")
+        if not attraction_id_success:
+            messages.error(request, 'Failed to find attraction!')
+            return render(request, 'asset_management/attraction/add_attraction.html')
+        attraction_id = attraction_id_results[0][0]
+        
+
+        # Add the requirement to the database
+        requirement_insert_query = "INSERT INTO attraction_requirement (attraction_id, species_id, quantity) VALUES (%s, %s, %s);"
+        req_success = execute_query(requirement_insert_query, attraction_id, species_id, quantity, query_type="INSERT")
+
+        if not req_success:
+            delete_attraction(attraction_name)
+            messages.error(request, 'Failed to add attraction requirement!')
+            return render(request, 'asset_management/attraction/add_attraction.html')
+
+        messages.success(request, 'Attraction added successfully!')
+        return redirect('attraction_actions')
 
     return render(request, 'asset_management/attraction/add_attraction.html')
 
@@ -769,10 +829,30 @@ def edit_attraction(request, attraction_name):
 
             columns_buildings = ['building_id','building_name']
             buildings = [dict(zip(columns_buildings, row)) for row in buildings]
-
             
-            return render(request, 'asset_management/attraction/edit_attraction.html', {'attractions': attractions, 'buildings': buildings})
-           
+            # Fetch species from the database
+            species_query = "SELECT species_id, species_name FROM species;"
+            species, species_success = execute_query(species_query, query_type="SELECT")
+
+            if not species_success:
+                messages.error(request, 'Failed to fetch species!')
+                return render(request, 'error.html')
+
+            columns_species = ['species_id', 'species_name']
+            species = [dict(zip(columns_species, row)) for row in species]
+            
+        # Fetch the current requirements for the attraction
+            requirement_query = '''SELECT species_id, quantity FROM attraction_requirement 
+            WHERE attraction_id = (SELECT attraction_id FROM attraction WHERE attraction_name = %s);'''
+            requirement_results, requirement_success = execute_query(requirement_query, attraction_name, query_type="SELECT")
+
+            if not requirement_success:
+                messages.error(request, 'Failed to fetch attraction requirements!')
+                return render(request, 'error.html')    
+            columns_requirements = ['species_id', 'quantity']
+            requirements = [dict(zip(columns_requirements, row)) for row in requirement_results]
+
+            return render(request, 'asset_management/attraction/edit_attraction.html', {'attractions': attractions, 'buildings': buildings, 'requirements': requirements,'species': species})
 
         else:
             messages.error(request, "Failed to load attraction data.")
@@ -784,20 +864,68 @@ def edit_attraction(request, attraction_name):
         seats = request.POST.get('seats')
         building_id = request.POST.get('building_id')
         
+        get_attraction_id_query = "SELECT attraction_id FROM attraction WHERE attraction_name = %s;"
+        attraction_id_results, attraction_id_success = execute_query(get_attraction_id_query, current_attraction_name, query_type="SELECT")
+        if not attraction_id_success:
+            messages.error(request, 'Failed to find attraction!')
+            return render(request, 'asset_management/attraction/add_attraction.html')
+        attraction_id = attraction_id_results[0][0]
+
         # Update attraction information
         query_update = "UPDATE attraction SET attraction_name = %s, seats = %s, building_id = %s WHERE attraction_name = %s"
         success = execute_query(query_update, new_attraction_name, seats, building_id, current_attraction_name, query_type="UPDATE")
+        
+        # Retrieve additional fields for requirements
+        current_species_id = request.POST.get('current_species_id')
+        species_id = request.POST.get('species_id')
+        quantity = request.POST.get('quantity')
+ 
+        # Update the requirement information
+        if (current_species_id != species_id):
+            delete_query = "DELETE FROM attraction_requirement WHERE attraction_id = %s AND species_id = %s;"
+            delete_success = execute_query(delete_query, attraction_id, current_species_id, query_type="DELETE")
 
-        if success:
-            messages.success(request, 'Attraction updated successfully!')
+            if not delete_success:
+                messages.error(request, 'Failed to update attraction requirement!')
+                return render(request, 'asset_management/attraction/edit_attraction.html')
+            
+            if delete_success:
+                insert_query = "INSERT INTO attraction_requirement (attraction_id, species_id, quantity) VALUES (%s, %s, %s);"
+                insert_success = execute_query(insert_query, attraction_id, species_id, quantity, query_type="INSERT")
+
+                if not insert_success:
+                    messages.error(request, 'Failed to update attraction requirement!')
+                    return render(request, 'asset_management/attraction/edit_attraction.html')
+        
             return redirect('attraction_actions')
+            
+ 
         else:
-            messages.error(request, 'Failed to update attraction!')
-            # Render the edit page again with the current attraction information
-            return render(request, 'asset_management/attraction/edit_attraction.html', {'attraction_name': current_attraction_name})
+            requirement_update_query = '''UPDATE attraction_requirement SET quantity = %s WHERE attraction_id = %s AND species_id = %s;'''
+            requirement_success = execute_query (requirement_update_query, quantity, attraction_id, species_id, query_type="UPDATE")
+
+            if not requirement_success:
+                messages.error(request, 'Failed to update attraction requirements!')
+                return render(request, 'asset_management/attraction/edit_attraction.html', {'attraction_name': current_attraction_name})
+
+            if success:
+                messages.success(request, 'Attraction updated successfully!')
+                return redirect('attraction_actions')
+            else:
+                messages.error(request, 'Failed to update attraction!')
+                # Render the edit page again with the current attraction information
+                return render(request, 'asset_management/attraction/edit_attraction.html', {'attraction_name': current_attraction_name})
 
 def delete_attraction(request, attraction_name):
     if request.method == 'POST':
+        # First, delete the related requirements in attraction_requirement
+        delete_requirements_query = "DELETE FROM attraction_requirement WHERE attraction_id IN (SELECT attraction_id FROM attraction WHERE attraction_name = %s)"
+        _, req_delete_success = execute_query(delete_requirements_query, attraction_name, query_type="DELETE")
+
+        if not req_delete_success:
+            messages.error(request, 'Failed to delete attraction requirements!')
+            return redirect('attraction_actions')
+
         # Deleting an attraction
         query = "DELETE FROM attraction WHERE attraction_name = %s"
         rows_affected, success = execute_query(query, attraction_name, query_type="DELETE")
@@ -845,23 +973,18 @@ def add_concession(request):
 def edit_concession(request, concession_name):
     if request.method == 'GET':
         query = '''SELECT concession_id, concession_name
-                   FROM concession
-                   WHERE concession_name = %s;'''
+        FROM concession WHERE concession_name = %s;'''
         results, success = execute_query(query, concession_name, query_type="SELECT")
+        
+        if not success:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
 
-        if success and results:
-            # Assuming the result is a single record
-            concession = results[0]
-            # Convert to dictionary if needed, e.g., if execute_query returns a tuple
-            concession_data = {
-                'concession_id': concession[0],
-                'concession_name': concession[1]
-            }
-            return render(request, 'asset_management/concession/edit_concession.html', {'concession': concession_data})
-        else:
-            # Handle the case where no concession is found or if there's an error
-            messages.error(request, "Concession not found.")
-            return redirect('concession_actions')  # Redirect to the listing page or error page
+        columns_concession = ['concession_id','concession_name']
+        concessions = [dict(zip(columns_concession, row)) for row in results]
+
+        return render(request, 'asset_management/concession/edit_concession.html', {'concessions': concessions})
+    
     
     if request.method == 'POST':
         current_concession_name = request.POST.get('current_concession_name') 
@@ -891,3 +1014,8 @@ def delete_concession(request, concession_name):
         else:
             messages.error(request, "There was an error deleting the concession.")
             return redirect('concession_actions')
+
+
+######################################################
+#                    Animal
+######################################################

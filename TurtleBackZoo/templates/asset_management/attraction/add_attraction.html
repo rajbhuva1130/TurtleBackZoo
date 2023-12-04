@@ -22,6 +22,14 @@
                 <option value="{{ building.building_id }}">{{ building.building_name }}</option>
             {% endfor %}
         </select><br>
+        <label for="species">Species:</label><br>
+        <select name="species_id" id="species">
+            {% for specie in species %}
+                <option value="{{ specie.species_id }}">{{ specie.species_name }}</option>
+            {% endfor %}
+        </select><br>
+        <label for="quantity">Quantity:</label><br>
+        <input type="number" id="quantity" name="quantity" required><br>
         <input type="submit" value="Submit">
     </form>
     <a href="{% url 'attraction_actions' %}" class="button">Back</a>
