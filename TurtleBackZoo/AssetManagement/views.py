@@ -264,8 +264,41 @@ def add_employee(request):
         columns_employee_type = ['employee_type','employee_type_id']
         employee_types = [dict(zip(columns_employee_type, row)) for row in results_employee_type]
         
+        # Retrieve concession types
+        concession_query = '''SELECT DISTINCT concession_name, concession_id FROM concession;''' 
+        result_concession_name, success_concession_name = execute_query(concession_query,query_type="SELECT")
+        
+        if not success_concession_name:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
 
-        return render(request, 'asset_management/employee/add_employee.html', {'supervisors': supervisors, 'employee_types': employee_types})
+        columns_concession_name = ['concession_name','concession_id']
+        concessions = [dict(zip(columns_concession_name, row)) for row in result_concession_name]
+        
+        # Retrieve Maintenance Specialization
+        maintenance_query = '''SELECT DISTINCT specialization FROM maintenance;''' 
+        result_maintenance, success_maintenance = execute_query(maintenance_query,query_type="SELECT")
+        
+        if not success_maintenance:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_maintenance = ['specialization']
+        specializations = [dict(zip(columns_maintenance, row)) for row in result_maintenance]
+        
+        # Retrieve Spices Name
+        species_query = '''SELECT DISTINCT species_name, species_id FROM species;''' 
+        result_species, success_species = execute_query(species_query,query_type="SELECT")
+        
+        if not success_species:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_species = ['species_name','species_id']
+        species = [dict(zip(columns_species, row)) for row in result_species]
+
+        return render(request, 'asset_management/employee/add_employee.html', {'supervisors': supervisors, 'employee_types': employee_types, 'concessions':concessions,
+                                                                               'specializations':specializations, 'species':species })
     
    
     elif request.method == 'POST':
@@ -319,21 +352,61 @@ def add_employee(request):
                 shift = request.POST.get('shift')
                 query_insert_ticket_seller ='''INSERT INTO ticket_seller (employee_id, shift) 
                 VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s)'''
-                execute_query(query_insert_ticket_seller,email, shift, query_type="INSERT")
+                success_ = execute_query(query_insert_ticket_seller,email, shift, query_type="INSERT")
+                
+                if not success_:
+                    query_select_emp_number = "SELECT emp_number FROM employee WHERE email = %s"
+                    emp_number = execute_query(query_select_emp_number, email, query_type="SELECT")
+
+                    # Check if emp_number was successfully retrieved
+                    if emp_number:
+                        delete_employee(emp_number[0])  # Assuming emp_number is returned as a list or tuple
+                        messages.error(request, 'Error adding ticket seller details!')
+                    else:
+                        messages.error(request, 'Failed to retrieve employee details for deletion.')
+
+                    return render(request, 'asset_management/employee/add_employee.html')
+                    
 
             # <!-- Customer Service Section -->
             elif employee_type_id == 'fb91f4e8-9ce0-46e4-8f1c-30d06dfdd7ad':  
                 concession_name = request.POST.get('concession_name')
                 query_insert_customer_service = '''INSERT INTO customer_service (employee_id, concession_id) 
                 VALUES ((SELECT employee_id FROM employee WHERE email = %s), (SELECT concession_id FROM concession WHERE concession_name = %s))'''
-                execute_query(query_insert_customer_service, email, concession_name, query_type="INSERT")    
+                success_ = execute_query(query_insert_customer_service, email, concession_name, query_type="INSERT")
+                
+                if not success_:
+                    query_select_emp_number = "SELECT emp_number FROM employee WHERE email = %s"
+                    emp_number = execute_query(query_select_emp_number, email, query_type="SELECT")
+
+                    # Check if emp_number was successfully retrieved
+                    if emp_number:
+                        delete_employee(emp_number[0])  # Assuming emp_number is returned as a list or tuple
+                        messages.error(request, 'Error adding ticket seller details!')
+                    else:
+                        messages.error(request, 'Failed to retrieve employee details for deletion.')
+
+                    return render(request, 'asset_management/employee/add_employee.html')    
                 
             # <!-- Maintenance Section -->
             elif employee_type_id == '084efa92-595e-4820-90d7-b330745770f1':
                 specialization = request.POST.get('specialization')
                 query_insert_maintenance = '''INSERT INTO maintenance (employee_id, specialization) 
                 VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s)'''
-                execute_query(query_insert_maintenance, email, specialization, query_type='INSERT')
+                success_ = execute_query(query_insert_maintenance, email, specialization, query_type='INSERT')
+                
+                if not success_:
+                    query_select_emp_number = "SELECT emp_number FROM employee WHERE email = %s"
+                    emp_number = execute_query(query_select_emp_number, email, query_type="SELECT")
+
+                    # Check if emp_number was successfully retrieved
+                    if emp_number:
+                        delete_employee(emp_number[0])  # Assuming emp_number is returned as a list or tuple
+                        messages.error(request, 'Error adding ticket seller details!')
+                    else:
+                        messages.error(request, 'Failed to retrieve employee details for deletion.')
+
+                    return render(request, 'asset_management/employee/add_employee.html') 
             
             # !-- Veterinarians Section -->
             elif employee_type_id == '88f6ea93-ed8b-40c2-a727-6bd40044ef15': 
@@ -342,7 +415,20 @@ def add_employee(request):
                 specie_name = request.POST.get('specie_name')
                 query_insert_veterinarian = ''' INSERT INTO veterinarian (employee_id, license_number, degree, species_id) 
                  VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s, %s, (SELECT species_id FROM species WHERE species_name = %s)) '''
-                execute_query(query_insert_veterinarian, email, license_number, degree, specie_name, query_type="INSERT")
+                success_ = execute_query(query_insert_veterinarian, email, license_number, degree, specie_name, query_type="INSERT")
+                
+                if not success_:
+                    query_select_emp_number = "SELECT emp_number FROM employee WHERE email = %s"
+                    emp_number = execute_query(query_select_emp_number, email, query_type="SELECT")
+
+                    # Check if emp_number was successfully retrieved
+                    if emp_number:
+                        delete_employee(emp_number[0])  # Assuming emp_number is returned as a list or tuple
+                        messages.error(request, 'Error adding ticket seller details!')
+                    else:
+                        messages.error(request, 'Failed to retrieve employee details for deletion.')
+
+                    return render(request, 'asset_management/employee/add_employee.html') 
             
             # <!-- Animal Care Section -->
             elif employee_type_id == '01104a75-e543-40c1-a6dc-175e2d2eb8aa':
@@ -350,7 +436,20 @@ def add_employee(request):
                 species_name = request.POST.get('species_name')
                 query_insert_animal_care = '''INSERT INTO animal_care_trainer_and_specialist (employee_id, experience,species_id) 
                 VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s,(SELECT species_id FROM species WHERE species_name = %s))'''
-                execute_query(query_insert_animal_care, email, experience, species_name, query_type="INSERT")
+                success_ = execute_query(query_insert_animal_care, email, experience, species_name, query_type="INSERT")
+                
+                if not success_:
+                    query_select_emp_number = "SELECT emp_number FROM employee WHERE email = %s"
+                    emp_number = execute_query(query_select_emp_number, email, query_type="SELECT")
+
+                    # Check if emp_number was successfully retrieved
+                    if emp_number:
+                        delete_employee(emp_number[0])  # Assuming emp_number is returned as a list or tuple
+                        messages.error(request, 'Error adding ticket seller details!')
+                    else:
+                        messages.error(request, 'Failed to retrieve employee details for deletion.')
+
+                    return render(request, 'asset_management/employee/add_employee.html') 
     
         # Add similar blocks for other employee types    \\\\ also return your emp no is - 
             messages.success(request, 'Employee added successfully!')
@@ -365,11 +464,54 @@ def add_employee(request):
         return render(request, 'error.html')
         
 
-
 def edit_employee(request, emp_number):
     if request.method == 'GET':
+        # Retrieve employee types
+        employee_type_query = "SELECT DISTINCT employee_type, employee_type_id FROM employee_type;"  # Adjust the query as needed
+        results_employee_type, success_employee_type = execute_query(employee_type_query, query_type="SELECT")
+
+        if not success_employee_type:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_employee_type = ['employee_type','employee_type_id']
+        employee_types = [dict(zip(columns_employee_type, row)) for row in results_employee_type]
+        
+        # Retrieve concession types
+        concession_query = '''SELECT DISTINCT concession_name, concession_id FROM concession;''' 
+        result_concession_name, success_concession_name = execute_query(concession_query,query_type="SELECT")
+        
+        if not success_concession_name:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_concession_name = ['concession_name','concession_id']
+        concessions = [dict(zip(columns_concession_name, row)) for row in result_concession_name]
+        
+        # Retrieve Maintenance Specialization
+        maintenance_query = '''SELECT DISTINCT specialization FROM maintenance;''' 
+        result_maintenance, success_maintenance = execute_query(maintenance_query,query_type="SELECT")
+        
+        if not success_maintenance:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_maintenance = ['specialization']
+        specializations = [dict(zip(columns_maintenance, row)) for row in result_maintenance]
+        
+        # Retrieve Spices Name
+        species_query = '''SELECT DISTINCT species_name, species_id FROM species;''' 
+        result_species, success_species = execute_query(species_query,query_type="SELECT")
+        
+        if not success_species:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_species = ['species_name','species_id']
+        species = [dict(zip(columns_species, row)) for row in result_species]
+        
         # Fetch the employee details by name to pre-fill the form
-        query = "SELECT * FROM employee WHERE first_name = %s;"  # Adjust the query as needed
+        query = "SELECT * FROM employee WHERE emp_number = %s;"  # Adjust the query as needed
         results, success = execute_query(query, emp_number, query_type="SELECT")
 
         if success and results:
@@ -377,13 +519,15 @@ def edit_employee(request, emp_number):
                 'employee_id', 'first_name', 'middle_name', 'last_name',
                 'street', 'city', 'state', 'country', 'zipcode',
                 'start_date', 'email', 'phone', 'password',
-                'supervisor_id', 'rate_id', 'employee_type'
+                'supervisor_id', 'employee_type','emp_number'
             ]
             employee = dict(zip(columns, results[0]))  # Assuming the result is a single record
-            return render(request, 'asset_management/employee/edit_employee.html', {'employee': employee})
+            return render(request, 'asset_management/employee/edit_employee.html', {'employee': employee,'employee_types':employee_types,'concessions':concessions,
+                                                                               'specializations':specializations, 'species':species})
         else:
             messages.error(request, 'Employee not found!')
             return redirect('employee_actions')
+
 
     elif request.method == 'POST':
         # Extract data from form submission
@@ -398,7 +542,18 @@ def edit_employee(request, emp_number):
         email = request.POST.get('email')
         phone = request.POST.get('phone')
         password = request.POST.get('password')
-    
+        employee_type_id = request.POST.get('employee_type_id')
+
+        # Get the existing employee type for the employee
+        query_get_current_type = "SELECT employee_type_id FROM employee WHERE emp_number = %s;"
+        current_type, success_current_type = execute_query(query_get_current_type, emp_number, query_type="SELECT")
+        
+        # Check if the current employee type is retrieved successfully
+        if not success_current_type or not current_type:
+            messages.error(request, 'Failed to fetch current employee type!')
+            return redirect('employee_actions')
+
+        current_type_id = current_type[0][0]  # Assuming the result is a single value
 
         # Update employee information in the database
         query_update = """
@@ -413,8 +568,8 @@ def edit_employee(request, emp_number):
             zipcode = %s, 
             email = %s, 
             phone = %s, 
-            password = %s,
-            WHERE first_name = %s
+            password = %s
+            WHERE emp_number = %s
         """
         success = execute_query(
             query_update, first_name, middle_name, last_name, street, city, state, country, zipcode, email, phone, password,
@@ -422,7 +577,75 @@ def edit_employee(request, emp_number):
         )
 
         if success:
-            messages.success(request, 'Employee updated successfully!')
+            # Function to delete the previous employee type data
+            def delete_previous_employee_type_data(emp_type_id):
+                # Map employee type ID to the respective table and column name
+                type_table_map = {
+                    '984b7fb8-dd36-4c96-939d-8bb57583b27c': ('ticket_seller', 'employee_id'),
+                    'fb91f4e8-9ce0-46e4-8f1c-30d06dfdd7ad': ('customer_service', 'employee_id'),
+                    '084efa92-595e-4820-90d7-b330745770f1': ('maintenance', 'employee_id'),
+                    '88f6ea93-ed8b-40c2-a727-6bd40044ef15': ('veterinarian', 'employee_id'),
+                    '01104a75-e543-40c1-a6dc-175e2d2eb8aa': ('animal_care_trainer_and_specialist', 'employee_id')
+                }
+                result = type_table_map.get(emp_type_id)
+                if result:
+                    table, column = result
+                    query_delete = f"DELETE FROM {table} WHERE {column} = (SELECT employee_id FROM employee WHERE emp_number = %s);"
+                    try:
+                        execute_query(query_delete, emp_number, query_type="DELETE")
+                    except Exception as e:
+                        # Handle or log the exception
+                        print(f"Error while executing delete query: {e}")
+                else:
+                    # Handle the case when emp_type_id is not found
+                    print(f"No mapping found for emp_type_id: {emp_type_id}")
+
+            # Check if the employee type has changed
+            if current_type_id != employee_type_id:
+                # Delete data from the previous employee type table
+                delete_previous_employee_type_data(current_type_id)
+                
+                # <!-- Ticket Sellers Section -->
+                if employee_type_id == '984b7fb8-dd36-4c96-939d-8bb57583b27c':
+                    shift = request.POST.get('shift')
+                    query_insert_ticket_seller ='''INSERT INTO ticket_seller (employee_id, shift) 
+                    VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s)'''
+                    success_ = execute_query(query_insert_ticket_seller,email, shift, query_type="INSERT")
+                    
+            # <!-- Customer Service Section -->
+            elif employee_type_id == 'fb91f4e8-9ce0-46e4-8f1c-30d06dfdd7ad':  
+                concession_name = request.POST.get('concession_name')
+                query_insert_customer_service = '''INSERT INTO customer_service (employee_id, concession_id) 
+                VALUES ((SELECT employee_id FROM employee WHERE email = %s), (SELECT concession_id FROM concession WHERE concession_name = %s))'''
+                success_ = execute_query(query_insert_customer_service, email, concession_name, query_type="INSERT")
+                
+            # <!-- Maintenance Section -->
+            elif employee_type_id == '084efa92-595e-4820-90d7-b330745770f1':
+                specialization = request.POST.get('specialization')
+                query_insert_maintenance = '''INSERT INTO maintenance (employee_id, specialization) 
+                VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s)'''
+                success_ = execute_query(query_insert_maintenance, email, specialization, query_type='INSERT')
+            
+            # !-- Veterinarians Section -->
+            elif employee_type_id == '88f6ea93-ed8b-40c2-a727-6bd40044ef15': 
+                license_number = request.POST.get('license_number')
+                degree = request.POST.get('degree')
+                specie_name = request.POST.get('specie_name')
+                query_insert_veterinarian = ''' INSERT INTO veterinarian (employee_id, license_number, degree, species_id) 
+                 VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s, %s, (SELECT species_id FROM species WHERE species_name = %s)) '''
+                success_ = execute_query(query_insert_veterinarian, email, license_number, degree, specie_name, query_type="INSERT")
+            
+            # <!-- Animal Care Section -->
+            elif employee_type_id == '01104a75-e543-40c1-a6dc-175e2d2eb8aa':
+                experience = request.POST.get('experience')
+                species_name = request.POST.get('species_name')
+                query_insert_animal_care = '''INSERT INTO animal_care_trainer_and_specialist (employee_id, experience,species_id) 
+                VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s,(SELECT species_id FROM species WHERE species_name = %s))'''
+                success_ = execute_query(query_insert_animal_care, email, experience, species_name, query_type="INSERT")
+                
+
+            messages.success(request, 'Employee Updated successfully!')
+            return redirect('employee_actions')
         else:
             messages.error(request, 'Failed to update employee!')
         

@@ -75,14 +75,22 @@
     
         <!-- Customer Service Section -->
         <div id="fb91f4e8-9ce0-46e4-8f1c-30d06dfdd7ad" class="employee-section">
-            <label for="concession_name">Concession Name:</label>
-            <input type="text" id="concession_name" name="concession_name">
+            <label for="concession">Concessions name:</label>
+            <select id="concession_name" name="concession_name">
+                {% for concession in concessions %}
+                    <option value="{{ concession.concession_id }}">{{ concession.concession_name }}</option>
+                {% endfor %}
+            </select>
         </div>
     
         <!-- Maintenance Section -->
         <div id="084efa92-595e-4820-90d7-b330745770f1" class="employee-section">
             <label for="specialization">Specialization:</label>
-            <input type="text" id="specialization" name="specialization">
+            <select id="specialization" name="specialization">
+                {% for specialization in specializations %}
+                    <option value="{{ specialization.specialization }}">{{ specialization.specialization }}</option>
+                {% endfor %}
+            </select>
         </div>
     
         <!-- Veterinarians Section -->
