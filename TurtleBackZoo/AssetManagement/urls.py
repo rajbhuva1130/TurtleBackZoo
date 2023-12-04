@@ -30,4 +30,8 @@ urlpatterns = [
     path('attraction/delete_attraction/<str:attraction_name>/', views.delete_attraction, name='delete_attraction'),
     
     # concession's link
+    path('asset/concession/', views.concession_actions, name='concession_actions'),
+    path('asset/concession/add_concession/', views.add_concession, name='add_concession'),
+    path('asset/concession/edit_concession/<str:concession_name>/', views.edit_concession, name='edit_concession'),
+    path('asset/concession/delete_concession/<str:concession_name>/', views.delete_concession, name='delete_concession'),
 ]

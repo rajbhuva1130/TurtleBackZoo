@@ -1,0 +1,35 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Concession Management</h1>
+    <button onclick="location.href='{% url 'add_concession' %}'">Add New Concession</button>
+    <table>
+        <thead>
+            <tr>
+                <th>Concession Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for concession in concessions %}
+            <tr>
+                <td>{{ concession.concession_name }}</td>
+                <td>
+                    <form action="{% url 'delete_concession' concession.concession_name %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete {{ concession.concession_name }}?');">Delete</button>
+                    </form>
+                    <form action="{% url 'edit_concession' concession.concession_name %}" method="get">
+                        {% csrf_token %}
+                        <input type="hidden" name="concession_name" value="{{ concession.concession_name }}">
+                        <button type="submit">Edit</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

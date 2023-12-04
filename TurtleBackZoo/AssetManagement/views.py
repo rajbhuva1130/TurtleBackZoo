@@ -815,5 +815,79 @@ def delete_attraction(request, attraction_name):
 ######################################################
 
 def concession_actions(request):
-    # Logic for concession actions
-    return render(request, 'asset_management/concession_actions.html')
+    # Assuming 'execute_query' is a utility function you've defined to run database queries
+    query = "SELECT concession_id, concession_name FROM concession;"
+    results, success = execute_query(query, query_type='SELECT')
+
+    if not success:
+        messages.error(request, "Failed to load concessions.")
+        return render(request, 'error.html') 
+    
+    columns_concession = ['concession_id','concession_name']
+    concessions = [dict(zip(columns_concession, row)) for row in results]
+
+    return render(request, 'asset_management/concession/concession_actions.html', {'concessions': concessions}) 
+    
+def add_concession(request):
+    if request.method == 'POST':
+        concession_name = request.POST.get('concession_name')
+        query = "INSERT INTO concession (concession_name) VALUES (%s);"
+        success = execute_query(query, concession_name, query_type="INSERT")
+
+        if success:
+            messages.success(request, "New concession added successfully.")
+            return redirect('concession_actions')
+        else:
+            messages.error(request, "There was an error adding the concession.")
+
+    return render(request, 'asset_management/concession/add_concession.html')
+
+def edit_concession(request, concession_name):
+    if request.method == 'GET':
+        query = '''SELECT concession_id, concession_name
+                   FROM concession
+                   WHERE concession_name = %s;'''
+        results, success = execute_query(query, concession_name, query_type="SELECT")
+
+        if success and results:
+            # Assuming the result is a single record
+            concession = results[0]
+            # Convert to dictionary if needed, e.g., if execute_query returns a tuple
+            concession_data = {
+                'concession_id': concession[0],
+                'concession_name': concession[1]
+            }
+            return render(request, 'asset_management/concession/edit_concession.html', {'concession': concession_data})
+        else:
+            # Handle the case where no concession is found or if there's an error
+            messages.error(request, "Concession not found.")
+            return redirect('concession_actions')  # Redirect to the listing page or error page
+    
+    if request.method == 'POST':
+        current_concession_name = request.POST.get('current_concession_name') 
+        concession_name = request.POST.get('concession_name')
+        # Assume you have a function execute_query that handles your database interaction
+        query = "UPDATE concession SET concession_name = %s WHERE concession_name = %s;"
+        success = execute_query(query, concession_name, current_concession_name, query_type="UPDATE")
+
+        if success:
+            messages.success(request, "Concession updated successfully.")
+            return redirect('concession_actions')
+        else:
+            messages.error(request, "There was an error updating the concession.")
+
+    context = {'concession': concession}
+    return render(request, 'asset_management/concession/edit_concession.html', context)
+
+def delete_concession(request, concession_name):
+    if request.method == 'POST':
+        # Perform the delete operation
+        query = "DELETE FROM concession WHERE concession_name = %s;"
+        success = execute_query(query, concession_name, query_type="DELETE")
+        
+        if success:
+            messages.success(request, "Concession deleted successfully.")
+            return redirect('concession_actions')
+        else:
+            messages.error(request, "There was an error deleting the concession.")
+            return redirect('concession_actions')
