@@ -17,6 +17,7 @@
 
     <form action="{% url 'edit_employee' employee.emp_number %}" method="post">
         {% csrf_token %}
+        <input type="hidden" name="current_type_id" value="{{ employee.employee_type }}">
 
         <label for="first_name">First Name:</label>
         <input type="text" id="first_name" name="first_name" value="{{ employee.first_name }}" required>

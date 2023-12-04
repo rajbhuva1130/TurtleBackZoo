@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Edit Attraction
+{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+{% for attraction in attractions %}
+    <h1>Update Attraction: {{attraction_old_name}}</h1> 
+    <form action="{% url 'edit_attraction' attraction.attraction_name %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="current_attraction_name" value="{{ attraction.attraction_name }}">
+        <label for="attraction_name">Attraction Name:</label>
+        <input type="text" id="attraction_name" name="attraction_name" value="{{ attraction.attraction_name }}" required>
+        
+        <label for="seats">Seats:</label>
+        <input type="number" id="seats" name="seats" value="{{ attraction.seats }}" required>
+        
+        <label for="building">Building:</label>
+        <select id="building" name="building_id" required>
+            {% for building in buildings %}
+                <option value="{{ building.building_id }}" {% if building.building_id == attraction.building_id %}selected{% endif %}>{{ building.building_name }}</option>
+            {% endfor %}
+        </select>
+
+        <input type="submit" value="Update">
+    </form>
+
+    <a href="{% url 'attraction_actions' %}" class="button">Back</a>
+   
+{% endfor %}
+
+{% endblock %}

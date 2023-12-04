@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<h2>Add Attraction</h2>
+    <form action="{% url 'add_attraction' %}" method="post">
+        {% csrf_token %}
+        <label for="attraction_name">Attraction Name:</label><br>
+        <input type="text" id="attraction_name" name="attraction_name" required><br>
+        <label for="seats">Seats:</label><br>
+        <input type="number" id="seats" name="seats" required><br>
+        <label for="building_id">Building:</label><br>
+        <select id="building_id" name="building_id" required>
+            {% for building in buildings %}
+                <option value="{{ building.building_id }}">{{ building.building_name }}</option>
+            {% endfor %}
+        </select><br>
+        <input type="submit" value="Submit">
+    </form>
+    <a href="{% url 'attraction_actions' %}" class="button">Back</a>
+
+{% endblock %}

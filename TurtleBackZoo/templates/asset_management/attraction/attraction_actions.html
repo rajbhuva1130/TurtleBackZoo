@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attraction Actions</title>
+    <style>
+        /* Add your CSS styles here */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>List of Attractions</h1>
+            <button onclick="location.href='{% url 'add_attraction' %}'">Add New Attraction</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Attraction Name</th>
+                    <th>Seats</th>
+                    <th>Building name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attraction in attractions %}
+                    <tr>
+                        <td>{{ attraction.attraction_name }}</td>
+                        <td>{{ attraction.seats }}</td>
+                        <td>{{ attraction.building_name }}</td>
+                        <td>
+                            <form action="{% url 'delete_attraction' attraction.attraction_name %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" onclick="return confirm('Are you sure you want to delete {{ attraction.attraction_name }}?');">Delete</button>
+                            </form>
+                            <form action="{% url 'edit_attraction' attraction.attraction_name %}" method="get">
+                                {% csrf_token %}
+                                <input type="hidden" name="attraction_name" value="{{ attraction.attraction_name }}">
+                                <button type="submit">Edit</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function deleteConfirm(e) {
+            e.preventDefault(); // prevent form submit
+            var confirmation = window.confirm('Are you sure to delete this attraction?');
+            if (confirmation == true) {
+                $(this).closest("form").submit();
+            } else {
+                return false;
+            }
+        }
+    </script>
+</body>
+</html>
+{% endblock %}

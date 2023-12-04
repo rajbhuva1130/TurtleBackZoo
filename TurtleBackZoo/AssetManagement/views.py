@@ -531,6 +531,7 @@ def edit_employee(request, emp_number):
 
     elif request.method == 'POST':
         # Extract data from form submission
+        current_type_id = request.POST.get('current_type_id') 
         first_name = request.POST.get('first_name')
         middle_name = request.POST.get('middle_name')
         last_name = request.POST.get('last_name')
@@ -553,7 +554,7 @@ def edit_employee(request, emp_number):
             messages.error(request, 'Failed to fetch current employee type!')
             return redirect('employee_actions')
 
-        current_type_id = current_type[0][0]  # Assuming the result is a single value
+        
 
         # Update employee information in the database
         query_update = """
@@ -689,9 +690,123 @@ def delete_employee(request, emp_number):
 #                    Attraction
 ######################################################
 
+# def attraction_actions(request):
+#     # Logic for attraction actions
+#     return render(request, 'asset_management/attraction/attraction_actions.html')
+
 def attraction_actions(request):
-    # Logic for attraction actions
-    return render(request, 'asset_management/attraction_actions.html')
+    query = '''SELECT a.attraction_id, a.attraction_name, a.seats, b.building_name
+    FROM attraction a INNER JOIN building b ON a.building_id = b.building_id;''' 
+
+    results, success = execute_query(query, query_type="SELECT")
+
+    if success:
+        columns = ['attraction_id', 'attraction_name', 'seats', 'building_name']  
+        
+        # Restructuring the data for easier access in the template
+        attractions = [dict(zip(columns, row)) for row in results]
+        
+        return render(request, 'asset_management/attraction/attraction_actions.html', {'attractions': attractions})
+    else:
+        messages.error(request, "Failed to load attractions.")
+        return render(request, 'error.html')  # Render an error page or handle failure accordingly
+
+def add_attraction(request):
+    if request.method == 'GET':
+        # Fetch buildings from the database
+        query = "SELECT building_id, building_name FROM building;"
+        buildings, success = execute_query(query, query_type="SELECT")
+        
+        if not success:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_buildings = ['building_id','building_name']
+        buildings = [dict(zip(columns_buildings, row)) for row in buildings]
+
+        
+        return render(request, 'asset_management/attraction/add_attraction.html', {'buildings': buildings})
+        
+    
+    if request.method == 'POST':
+        attraction_name = request.POST.get('attraction_name')
+        seats = request.POST.get('seats')
+        building_id = request.POST.get('building_id')
+
+        # Inserting a new attraction
+        query_insert = "INSERT INTO attraction (attraction_name, seats, building_id) VALUES (%s, %s, %s)"
+        success = execute_query(query_insert, attraction_name, seats, building_id, query_type="INSERT")
+
+        if success:
+            messages.success(request, 'Attraction added successfully!')
+            return redirect('attraction_actions')
+        else:
+            messages.error(request, 'Failed to add attraction!')
+            return render(request, 'asset_management/attraction/add_attraction.html')
+
+    return render(request, 'asset_management/attraction/add_attraction.html')
+
+def edit_attraction(request, attraction_name):
+    if request.method == 'GET':
+        # Fetch the attraction details along with the building name
+        query = '''SELECT a.attraction_id, a.attraction_name, a.seats, b.building_name
+        FROM attraction a
+        INNER JOIN building b ON a.building_id = b.building_id
+        WHERE a.attraction_name = %s;'''
+        results, success = execute_query(query, attraction_name, query_type="SELECT")
+
+        if success:
+            columns = ['attraction_id', 'attraction_name', 'seats', 'building_name']
+            attractions = [dict(zip(columns, row)) for row in results]
+
+            # Also fetch all buildings for the dropdown list in the edit form
+            query = "SELECT building_id, building_name FROM building;"
+            buildings, success = execute_query(query, query_type="SELECT")
+            
+            if not success:
+                messages.error(request, 'Failed to fetch employee types!')
+                return render(request, 'error.html')
+
+            columns_buildings = ['building_id','building_name']
+            buildings = [dict(zip(columns_buildings, row)) for row in buildings]
+
+            
+            return render(request, 'asset_management/attraction/edit_attraction.html', {'attractions': attractions, 'buildings': buildings})
+           
+
+        else:
+            messages.error(request, "Failed to load attraction data.")
+            return render(request, 'error.html')  # Render an error page or handle failure accordingly
+
+    elif request.method == 'POST':
+        current_attraction_name = request.POST.get('current_attraction_name')  # This is the original name before update
+        new_attraction_name = request.POST.get('attraction_name')  # This is the new name you want to update to
+        seats = request.POST.get('seats')
+        building_id = request.POST.get('building_id')
+        
+        # Update attraction information
+        query_update = "UPDATE attraction SET attraction_name = %s, seats = %s, building_id = %s WHERE attraction_name = %s"
+        success = execute_query(query_update, new_attraction_name, seats, building_id, current_attraction_name, query_type="UPDATE")
+
+        if success:
+            messages.success(request, 'Attraction updated successfully!')
+            return redirect('attraction_actions')
+        else:
+            messages.error(request, 'Failed to update attraction!')
+            # Render the edit page again with the current attraction information
+            return render(request, 'asset_management/attraction/edit_attraction.html', {'attraction_name': current_attraction_name})
+
+def delete_attraction(request, attraction_name):
+    if request.method == 'POST':
+        # Deleting an attraction
+        query = "DELETE FROM attraction WHERE attraction_name = %s"
+        rows_affected, success = execute_query(query, attraction_name, query_type="DELETE")
+
+        if success and rows_affected > 0:
+            messages.success(request, 'Attraction deleted successfully!')
+            return redirect('attraction_actions')
+        else:
+            messages.error(request, 'Failed to delete attraction!')
 
 
 
