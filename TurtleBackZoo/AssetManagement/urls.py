@@ -46,4 +46,10 @@ urlpatterns = [
     path('enclosure/add_enclosure/', views.add_enclosure, name='add_enclosure'),
     path('enclosure/edit_enclosure/<str:enclosure_number>/', views.edit_enclosure, name='edit_enclosure'),
     path('enclosure/delete_enclosure/<str:enclosure_number>/', views.delete_enclosure, name='delete_enclosure'),
+    
+    # Show's Links
+    path('show/', views.show_actions, name='show_actions'),
+    path('show/add_show/', views.add_show, name='add_show'),
+    path('show/edit_show/<str:show_id>/', views.edit_show, name='edit_show'),
+    path('show/delete_show/<str:show_id>/', views.delete_show, name='delete_show'),
 ]

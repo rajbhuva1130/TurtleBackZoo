@@ -1248,3 +1248,115 @@ def delete_enclosure(request, enclosure_number):
         success = execute_query(query, enclosure_number, query_type="DELETE")
         
     return redirect('enclosure_actions')
+
+######################################################
+#                    show
+######################################################
+
+def show_actions(request):
+    query = '''SELECT s.show_id, s.attraction_id, a.attraction_name, s.tickets_sold, s.status, s."date", s."Time", s.revenue
+    FROM "show" s JOIN attraction a ON s.attraction_id = a.attraction_id;'''
+    results, success = execute_query(query, query_type='SELECT')
+
+    if not success:
+        messages.error(request, "Failed to load shows.")
+        return render(request, 'error.html')
+
+    columns_show = ['show_id', 'attraction_id', 'attraction_name', 'tickets_sold', 'status', 'date', 'time', 'revenue']
+    shows = [dict(zip(columns_show, row)) for row in results]
+
+    return render(request, 'asset_management/show/show_actions.html', {'shows': shows})
+
+
+def add_show(request):
+    if request.method == 'GET':
+        # Fetch attraction from the database
+        query = "SELECT attraction_id, attraction_name FROM attraction;"
+        attraction, success = execute_query(query, query_type="SELECT")
+        
+        if not success:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_attractions = ['attraction_id','attraction_name']
+        attractions = [dict(zip(columns_attractions, row)) for row in attraction]
+        
+        return render(request, 'asset_management/show/add_show.html', {'attractions':attractions})
+    
+    if request.method == 'POST':
+        # Fetch data from form
+        attraction_id = request.POST.get('attraction_id')
+        tickets_sold = request.POST.get('tickets_sold')
+        status = request.POST.get('status')
+        date = request.POST.get('date')
+        time = request.POST.get('time')
+        revenue = request.POST.get('revenue')
+
+        # SQL query to insert new show
+        query = "INSERT INTO show (attraction_id, tickets_sold, status, date, Time, revenue) VALUES (%s, %s, %s, %s, %s, %s);"
+        success = execute_query(query, attraction_id, tickets_sold, status, date, time, revenue, query_type="INSERT")
+
+        if success:
+            messages.success(request, "New show added successfully.")
+            return redirect('show_actions')
+        else:
+            messages.error(request, "There was an error adding the show.")
+
+    return render(request, 'asset_management/show/add_show.html')
+
+def edit_show(request, show_id):
+    if request.method == 'GET':
+        query = '''SELECT s.show_id, s.attraction_id, a.attraction_name, s.tickets_sold, s.status, s."date", s."Time", s.revenue
+        FROM "show" s JOIN attraction a ON s.attraction_id = a.attraction_id WHERE show_id = %s ;'''
+        results, success = execute_query(query,show_id, query_type='SELECT')
+
+        if not success:
+            messages.error(request, "Failed to load shows.")
+            return render(request, 'error.html')
+
+        columns_show = ['show_id', 'attraction_id', 'attraction_name', 'tickets_sold', 'status', 'date', 'time', 'revenue']
+        shows = [dict(zip(columns_show, row)) for row in results]
+
+        # # Fetch attraction from the database
+        # query = "SELECT attraction_id, attraction_name FROM attraction;"
+        # attraction, success = execute_query(query, query_type="SELECT")
+        
+        # if not success:
+        #     messages.error(request, 'Failed to fetch employee types!')
+        #     return render(request, 'error.html')
+
+        # columns_attractions = ['attraction_id','attraction_name']
+        # attractions = [dict(zip(columns_attractions, row)) for row in attraction]
+        
+        return render(request, 'asset_management/show/edit_show.html', {'shows': shows})
+
+    if request.method == 'POST':
+        tickets_sold = request.POST.get('tickets_sold')
+        status = request.POST.get('status')
+        date = request.POST.get('date')
+        time = request.POST.get('time')
+        revenue = request.POST.get('revenue')
+        
+        query = "UPDATE show SET  tickets_sold = %s, status = %s, date = %s, \"Time\" = %s, revenue = %s WHERE show_id = %s;"
+        success = execute_query(query, tickets_sold, status, date, time, revenue, show_id, query_type="UPDATE")
+
+        if success:
+            messages.success(request, "Show updated successfully.")
+            return redirect('show_actions')
+        else:
+            messages.error(request, "There was an error updating the show.")
+
+    return render(request, 'asset_management/show/edit_show.html')
+
+def delete_show(request, show_id):
+    if request.method == 'POST':
+        # SQL query to delete the show
+        query = "DELETE FROM \"show\" WHERE show_id = %s;"
+        success = execute_query(query, show_id, query_type="DELETE")
+        
+        if success:
+            messages.success(request, "Show deleted successfully.")
+        else:
+            messages.error(request, "There was an error deleting the show.")
+
+    return redirect('show_actions')
