@@ -34,4 +34,10 @@ urlpatterns = [
     path('asset/concession/add_concession/', views.add_concession, name='add_concession'),
     path('asset/concession/edit_concession/<str:concession_name>/', views.edit_concession, name='edit_concession'),
     path('asset/concession/delete_concession/<str:concession_name>/', views.delete_concession, name='delete_concession'),
+    
+    # Animal's Links
+    path('animal/', views.animal_actions, name='animal_actions'),
+    path('animal/add_animal/', views.add_animal, name='add_animal'),
+    path('animal/edit_animal/<int:tag_number>/', views.edit_animal, name='edit_animal'),
+    path('animal/delete_animal/<int:tag_number>/', views.delete_animal, name='delete_animal'),
 ]

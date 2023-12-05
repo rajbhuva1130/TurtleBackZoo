@@ -32,27 +32,38 @@
 </head>
 <body>
     <div class="container">
-    <h1>Concession Management</h1>
-    <button onclick="location.href='{% url 'add_concession' %}'">Add New Concession</button>
+    <h1>Animal Management</h1>
+    <button onclick="location.href='{% url 'add_animal' %}'">Add New Animal</button>
+
     <table>
         <thead>
             <tr>
-                <th>Concession Name</th>
+                <th>Animal Number</th>
+                <th>Animal Name</th>
+                <th>Species Name</th>
+                <th>Enclosure Number</th>
+                <th>Status</th>
+                <th>Birth Year</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            {% for concession in concessions %}
+            {% for animal in animals %}
             <tr>
-                <td>{{ concession.concession_name }}</td>
+                <td>{{ animal.tag_number }}</td> 
+                <td>{{ animal.animal_name }}</td> 
+                <td>{{ animal.species_name }}</td> 
+                <td>{{ animal.enclosure_number }}</td> 
+                <td>{{ animal.status }}</td>
+                <td>{{ animal.birth_year }}</td>
                 <td>
-                    <form action="{% url 'delete_concession' concession.concession_name %}" method="post">
+                    <form action="{% url 'delete_animal' animal.tag_number %}" method="post">
                         {% csrf_token %}
-                        <button type="submit" onclick="return confirm('Are you sure you want to delete {{ concession.concession_name }}?');">Delete</button>
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete {{ animal.species_name }}?');">Delete</button>
                     </form>
-                    <form action="{% url 'edit_concession' concession.concession_name %}" method="get">
+                    <form action="{% url 'edit_animal' animal.tag_number %}" method="get">
                         {% csrf_token %}
-                        <input type="hidden" name="concession_name" value="{{ concession.concession_name }}">
+                        <input type="hidden" name="animal.tag_number" value="{{ animal.tag_number }}">
                         <button type="submit">Edit</button>
                     </form>
                 </td>
@@ -61,6 +72,7 @@
         </tbody>
     </table>
     </div>
+    
 </body>
 </html>
 {% endblock %}

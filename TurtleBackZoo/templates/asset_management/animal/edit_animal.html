@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Concession{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<div class="container">
+    {% for animal in animals %}
+    <h1>Update Animal: {{ animal.animal_name }}</h1> 
+    <form action="{% url 'edit_animal' animal.tag_number %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="current_animal_name" value="{{ animal.animal_name }}">
+
+        <label for="animal_name">Animal Name:</label><br>
+        <input type="text" id="animal_name" name="animal_name" value="{{ animal.animal_name }}" required><br>
+
+        <label for="species">Species:</label><br>
+        <select id="species" name="species_id" required>
+            {% for species in species %}
+                <option value="{{ species.species_id }}" {% if species.species_id == animal.species_id %}selected{% endif %}>
+                    {{ species.species_name }}
+                </option>
+            {% endfor %}
+        </select><br>
+        <label for="enclosure_id">Enclosure:</label><br>
+        <select id="enclosure_id" name="enclosure_id" required>
+            {% for enclosure in enclosures %}
+                <option value="{{ enclosure.enclosure_id }}"{% if enclosure.enclosure_id == animal.enclosure_id %}selected{% endif %}>
+                    {{ enclosure.enclosure_number }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label for="status">Status:</label><br>
+        <input type="text" id="status" name="status" value="{{ animal.status }}" required><br>
+
+        <label for="birth_year">Birth Year:</label><br>
+        <input type="number" id="birth_year" name="birth_year" value="{{ animal.birth_year }}" required><br>
+
+        <input type="submit" value="Update">
+    </form>
+    {% endfor %}
+    <a href="{% url 'animal_actions' %}" class="button">Back</a>
+    
+</div>
+{% endblock %}

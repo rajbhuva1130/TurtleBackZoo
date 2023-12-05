@@ -19,7 +19,6 @@ def management_and_reporting(request):
 
 ######################################################
 
-
 def asset_management_home(request):
     return render(request, 'asset_management/asset_home.html',{'name':'assetmanagement_home'})
 
@@ -119,8 +118,6 @@ def delete_building(request, name):
         
     # Render the delete confirmation page if not a POST request or if deletion failed
     return render(request, 'asset_management/delete_building.html', {'building_name': name})
-
-
 
 ######################################################
 #                    Employee
@@ -233,9 +230,7 @@ def info_employee(request):
 
     else:
         return render(request, 'error.html')
-
-
-    
+   
 def add_employee(request):
     if request.method == 'GET':
         # Retrieve supervisor names
@@ -463,7 +458,6 @@ def add_employee(request):
         messages.error(request, 'Invalid request method!')
         return render(request, 'error.html')
         
-
 def edit_employee(request, emp_number):
     if request.method == 'GET':
         # Retrieve employee types
@@ -652,9 +646,6 @@ def edit_employee(request, emp_number):
         
         return redirect('employee_actions')
 
-
-
-
 def delete_employee(request, emp_number):
     if request.method == 'POST':
         
@@ -684,15 +675,9 @@ def delete_employee(request, emp_number):
     # Render the delete confirmation page if not a POST request or if deletion failed
     return render(request, 'asset_management/delete_employee.html', {'employee': emp_number})
 
-
-
 ######################################################
 #                    Attraction
 ######################################################
-
-# def attraction_actions(request):
-#     # Logic for attraction actions
-#     return render(request, 'asset_management/attraction/attraction_actions.html')
 
 def attraction_actions(request):
     query = '''SELECT a.attraction_id, a.attraction_name, a.seats, b.building_name
@@ -737,7 +722,6 @@ def attraction_actions(request):
     
     return render(request, 'asset_management/attraction/attraction_actions.html', {'attractions': attractions})
     
-
 def add_attraction(request):
     if request.method == 'GET':
         # Fetch buildings from the database
@@ -936,8 +920,6 @@ def delete_attraction(request, attraction_name):
         else:
             messages.error(request, 'Failed to delete attraction!')
 
-
-
 ######################################################
 #                    Concession
 ######################################################
@@ -999,8 +981,7 @@ def edit_concession(request, concession_name):
         else:
             messages.error(request, "There was an error updating the concession.")
 
-    context = {'concession': concession}
-    return render(request, 'asset_management/concession/edit_concession.html', context)
+    return render(request, 'asset_management/concession/edit_concession.html', {'concessions': concessions})
 
 def delete_concession(request, concession_name):
     if request.method == 'POST':
@@ -1015,7 +996,127 @@ def delete_concession(request, concession_name):
             messages.error(request, "There was an error deleting the concession.")
             return redirect('concession_actions')
 
-
 ######################################################
 #                    Animal
 ######################################################
+def animal_actions(request):
+    query = '''SELECT a.animal_id,a.animal_name, s.species_name, e.enclosure_number, a.status, a.birth_year, a.tag_number
+    FROM animals a JOIN species s ON a.species_id = s.species_id JOIN enclosure e ON a.enclosure_id = e.enclosure_id;'''
+    Results, success = execute_query(query, None, query_type="SELECT")
+
+    if not success:
+        messages.error(request, "Failed to load concessions.")
+        return render(request, 'error.html') 
+    
+    columns_Animal = ['animal_id','animal_name','species_name','enclosure_number','status','birth_year','tag_number' ]
+    animals = [dict(zip(columns_Animal, row)) for row in Results]
+
+    return render(request, 'asset_management/animal/animal_action.html', {'animals': animals}) 
+
+def add_animal(request):
+    if request.method == 'GET':
+        # Fetch species from the database
+        species_query = "SELECT species_id, species_name FROM species;"
+        species, species_success = execute_query(species_query, query_type="SELECT")
+
+        if not species_success:
+            messages.error(request, 'Failed to fetch species!')
+            return render(request, 'error.html')
+
+        columns_species = ['species_id', 'species_name']
+        species = [dict(zip(columns_species, row)) for row in species]
+        
+        # Fetch enclosure from the database
+        enclosure_query = "SELECT enclosure_number, enclosure_id FROM enclosure;"
+        enclosure, enclosure_success = execute_query(enclosure_query, query_type="SELECT")
+
+        if not enclosure_success:
+            messages.error(request, 'Failed to fetch enclosures!')
+            return render(request, 'error.html')
+
+        columns_enclosure = ['enclosure_number', 'enclosure_id']
+        enclosures = [dict(zip(columns_enclosure, row)) for row in enclosure]
+        
+        return render(request, 'asset_management/animal/add_animal.html',{'species': species,'enclosures': enclosures} )
+
+    elif request.method == 'POST':
+        # Retrieve data from form
+        animal_name = request.POST['animal_name']
+        species_id = request.POST['species_id']
+        enclosure_id = request.POST['enclosure_id']
+        status = request.POST['status']
+        birth_year = request.POST['birth_year']
+
+        # Insert data into the database
+        insert_query = "INSERT INTO animals (species_id, enclosure_id, status, birth_year, animal_name) VALUES (%s, %s, %s, %s , %s)"
+        execute_query(insert_query, species_id, enclosure_id, status, birth_year, animal_name, query_type="INSERT")
+        
+        return redirect('animal_actions')  # Redirect to the list of animals
+    
+def edit_animal(request, tag_number):
+    if request.method == 'GET':
+        # Fetch the specific animal's details using its ID
+        query = '''SELECT a.animal_id,a.animal_name, s.species_name, e.enclosure_number, a.status, a.birth_year,a.tag_number
+        FROM animals a JOIN species s ON a.species_id = s.species_id JOIN enclosure e ON a.enclosure_id = e.enclosure_id
+        WHERE a.tag_number = %s;'''
+        Results, success = execute_query(query, tag_number, query_type="SELECT")
+
+        if not success:
+            messages.error(request, "Failed to load concessions.")
+            return render(request, 'error.html') 
+        
+        columns_Animal = ['animal_id','animal_name','species_name','enclosure_number','status','birth_year','tag_number' ]
+        animals = [dict(zip(columns_Animal, row)) for row in Results]
+        
+        # Fetch species from the database
+        species_query = "SELECT species_id, species_name FROM species;"
+        species, species_success = execute_query(species_query, query_type="SELECT")
+
+        if not species_success:
+            messages.error(request, 'Failed to fetch species!')
+            return render(request, 'error.html')
+
+        columns_species = ['species_id', 'species_name']
+        species = [dict(zip(columns_species, row)) for row in species]
+        
+        # Fetch enclosure from the database
+        enclosure_query = "SELECT enclosure_number, enclosure_id FROM enclosure;"
+        enclosure, enclosure_success = execute_query(enclosure_query, query_type="SELECT")
+
+        if not enclosure_success:
+            messages.error(request, 'Failed to fetch enclosures!')
+            return render(request, 'error.html')
+
+        columns_enclosure = ['enclosure_number', 'enclosure_id']
+        enclosures = [dict(zip(columns_enclosure, row)) for row in enclosure]
+
+        return render(request, 'asset_management/animal/edit_animal.html', {'animals': animals,'species': species,'enclosures': enclosures})
+        
+
+    if request.method == 'POST':
+        # Retrieve updated data from form
+        animal_name = request.POST.get('animal_name')
+        species_id = request.POST.get('species_id')
+        enclosure_id = request.POST.get('enclosure_id')
+        status = request.POST.get('status')
+        birth_year = request.POST.get('birth_year')
+        
+        # Update the animal's data in the database
+        update_query = "UPDATE animals SET species_id = %s, enclosure_id = %s, status = %s, birth_year = %s, animal_name = %s WHERE tag_number = %s"
+        success = execute_query(update_query, species_id, enclosure_id, status, birth_year,animal_name, tag_number, query_type="UPDATE")
+        
+        if success:
+            messages.success(request, 'Animal updated successfully!')
+            return redirect('animal_actions')  # Redirect to the list of animals
+        else:
+            messages.error(request, "There was an error updating the concession.")
+    
+    return render(request, 'asset_management/animal/edit_animal.html', {'animals': animals,'species': species,'enclosures': enclosures})
+    
+
+def delete_animal(request, tag_number):
+    if request.method == 'POST':
+        delete_query = "DELETE FROM animals WHERE tag_number = %s"
+        execute_query(delete_query, tag_number, query_type="DELETE")
+
+        return redirect('animal_actions')
