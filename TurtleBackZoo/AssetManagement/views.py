@@ -173,8 +173,6 @@ def info_employee(request):
             employee_data.append(employee)
 
         employees_id = employee_data[0]['employee_id']
-        
-        print("^&%^&^%&^&^%7:", emp_type)
 
         # Retrieve additional information based on emp_type
         if emp_type == 'Ticket Sellers':
@@ -222,8 +220,6 @@ def info_employee(request):
             for row in act_result:
                 act_data = dict(zip(columns_act, row))
                 employee_data[0].update(act_data)
-            
-        print(employee_data)
 
         # Pass the combined employee_data to the template
         return render(request, 'asset_management/employee/info_employee.html', {'employee_data': employee_data})
@@ -1041,7 +1037,7 @@ def delete_concession(request, concession_name):
 #                    Animal
 ######################################################
 def animal_actions(request):
-    query = '''SELECT a.animal_id, s.species_name, e.enclosure_number, a.status, a.birth_year, a.tag_number
+    query = '''SELECT a.animal_id, s.species_name, s.species_type,s.species_id,e.enclosure_id, e.enclosure_number, a.status, a.birth_year, a.tag_number
     FROM animals a JOIN species s ON a.species_id = s.species_id JOIN enclosure e ON a.enclosure_id = e.enclosure_id;'''
     Results, success = execute_query(query, None, query_type="SELECT")
 
@@ -1049,11 +1045,12 @@ def animal_actions(request):
         messages.error(request, "Failed to load concessions.")
         return render(request, 'error.html') 
     
-    columns_Animal = ['animal_id','species_name','enclosure_number','status','birth_year','tag_number' ]
-    animals = [dict(zip(columns_Animal, row)) for row in Results]
+    columns_Animal = ['animal_id','species_name','species_type','species_id','enclosure_id','enclosure_number','status','birth_year','tag_number' ]
+    animals = [dict(zip(columns_Animal, row)) for row in Results]  
 
     return render(request, 'asset_management/animal/animal_action.html', {'animals': animals}) 
-
+ 
+       
 def add_animal(request):
     if request.method == 'GET':
         # Fetch species from the database
@@ -1088,7 +1085,7 @@ def add_animal(request):
         birth_year = request.POST['birth_year']
 
         # Insert data into the database
-        insert_query = "INSERT INTO animals (species_id, enclosure_id, status, birth_year) VALUES (%s, %s, %s, %s , %s)"
+        insert_query = "INSERT INTO animals (species_id, enclosure_id, status, birth_year) VALUES (%s, %s, %s, %s)"
         execute_query(insert_query, species_id, enclosure_id, status, birth_year, query_type="INSERT")
         
         return redirect('animal_actions')  # Redirect to the list of animals
@@ -1151,7 +1148,6 @@ def edit_animal(request, tag_number):
             messages.error(request, "There was an error updating the concession.")
     
     return render(request, 'asset_management/animal/edit_animal.html', {'animals': animals,'species': species,'enclosures': enclosures})
-    
 
 def delete_animal(request, tag_number):
     if request.method == 'POST':
