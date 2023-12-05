@@ -39,7 +39,6 @@
         <thead>
             <tr>
                 <th>Animal Number</th>
-                <th>Animal Name</th>
                 <th>Species Name</th>
                 <th>Enclosure Number</th>
                 <th>Status</th>
@@ -51,7 +50,6 @@
             {% for animal in animals %}
             <tr>
                 <td>{{ animal.tag_number }}</td> 
-                <td>{{ animal.animal_name }}</td> 
                 <td>{{ animal.species_name }}</td> 
                 <td>{{ animal.enclosure_number }}</td> 
                 <td>{{ animal.status }}</td>

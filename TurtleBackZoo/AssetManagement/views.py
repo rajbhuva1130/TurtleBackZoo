@@ -563,17 +563,18 @@ def edit_employee(request, emp_number):
             zipcode = %s, 
             email = %s, 
             phone = %s, 
-            password = %s
+            password = %s,
+            employee_type_id = %s
             WHERE emp_number = %s
         """
         success = execute_query(
-            query_update, first_name, middle_name, last_name, street, city, state, country, zipcode, email, phone, password,
+            query_update, first_name, middle_name, last_name, street, city, state, country, zipcode, email, phone, password, employee_type_id,
             emp_number, query_type="UPDATE"
         )
 
         if success:
             # Function to delete the previous employee type data
-            def delete_previous_employee_type_data(emp_type_id):
+            def delete_previous_employee_type_data(current_type_id):
                 # Map employee type ID to the respective table and column name
                 type_table_map = {
                     '984b7fb8-dd36-4c96-939d-8bb57583b27c': ('ticket_seller', 'employee_id'),
@@ -582,10 +583,10 @@ def edit_employee(request, emp_number):
                     '88f6ea93-ed8b-40c2-a727-6bd40044ef15': ('veterinarian', 'employee_id'),
                     '01104a75-e543-40c1-a6dc-175e2d2eb8aa': ('animal_care_trainer_and_specialist', 'employee_id')
                 }
-                result = type_table_map.get(emp_type_id)
+                result = type_table_map.get(current_type_id)
                 if result:
                     table, column = result
-                    query_delete = f"DELETE FROM {table} WHERE {column} = (SELECT employee_id FROM employee WHERE emp_number = %s);"
+                    query_delete = "DELETE FROM {table} WHERE employee_id = (SELECT employee_id FROM employee WHERE emp_number = %s);"
                     try:
                         execute_query(query_delete, emp_number, query_type="DELETE")
                     except Exception as e:
@@ -593,51 +594,91 @@ def edit_employee(request, emp_number):
                         print(f"Error while executing delete query: {e}")
                 else:
                     # Handle the case when emp_type_id is not found
-                    print(f"No mapping found for emp_type_id: {emp_type_id}")
+                    print(f"No mapping found for emp_type_id: {current_type_id}")
 
             # Check if the employee type has changed
             if current_type_id != employee_type_id:
                 # Delete data from the previous employee type table
                 delete_previous_employee_type_data(current_type_id)
-                
+            
                 # <!-- Ticket Sellers Section -->
                 if employee_type_id == '984b7fb8-dd36-4c96-939d-8bb57583b27c':
                     shift = request.POST.get('shift')
                     query_insert_ticket_seller ='''INSERT INTO ticket_seller (employee_id, shift) 
-                    VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s)'''
-                    success_ = execute_query(query_insert_ticket_seller,email, shift, query_type="INSERT")
+                    VALUES ((SELECT employee_id FROM employee WHERE emp_number = %s), %s)'''
+                    success_ = execute_query(query_insert_ticket_seller,emp_number, shift, query_type="INSERT")
                     
-            # <!-- Customer Service Section -->
-            elif employee_type_id == 'fb91f4e8-9ce0-46e4-8f1c-30d06dfdd7ad':  
-                concession_name = request.POST.get('concession_name')
-                query_insert_customer_service = '''INSERT INTO customer_service (employee_id, concession_id) 
-                VALUES ((SELECT employee_id FROM employee WHERE email = %s), (SELECT concession_id FROM concession WHERE concession_name = %s))'''
-                success_ = execute_query(query_insert_customer_service, email, concession_name, query_type="INSERT")
+                # <!-- Customer Service Section -->
+                elif employee_type_id == 'fb91f4e8-9ce0-46e4-8f1c-30d06dfdd7ad':  
+                    concession_id = request.POST.get('concession_id')
+                    print('------------\n\n concession_id:',concession_id,'\n\n-----------')
+                    query_insert_customer_service = '''INSERT INTO customer_service (employee_id, concession_id) 
+                    VALUES ((SELECT employee_id FROM employee WHERE emp_number = %s), %s)'''
+                    success_ = execute_query(query_insert_customer_service, emp_number, concession_id, query_type="INSERT")
+                    
+                # <!-- Maintenance Section -->
+                elif employee_type_id == '084efa92-595e-4820-90d7-b330745770f1':
+                    specialization = request.POST.get('specialization')
+                    query_insert_maintenance = '''INSERT INTO maintenance (employee_id, specialization) 
+                    VALUES ((SELECT employee_id FROM employee WHERE emp_number = %s), %s)'''
+                    success_ = execute_query(query_insert_maintenance, emp_number, specialization, query_type='INSERT')
                 
-            # <!-- Maintenance Section -->
-            elif employee_type_id == '084efa92-595e-4820-90d7-b330745770f1':
-                specialization = request.POST.get('specialization')
-                query_insert_maintenance = '''INSERT INTO maintenance (employee_id, specialization) 
-                VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s)'''
-                success_ = execute_query(query_insert_maintenance, email, specialization, query_type='INSERT')
-            
-            # !-- Veterinarians Section -->
-            elif employee_type_id == '88f6ea93-ed8b-40c2-a727-6bd40044ef15': 
-                license_number = request.POST.get('license_number')
-                degree = request.POST.get('degree')
-                specie_name = request.POST.get('specie_name')
-                query_insert_veterinarian = ''' INSERT INTO veterinarian (employee_id, license_number, degree, species_id) 
-                 VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s, %s, (SELECT species_id FROM species WHERE species_name = %s)) '''
-                success_ = execute_query(query_insert_veterinarian, email, license_number, degree, specie_name, query_type="INSERT")
-            
-            # <!-- Animal Care Section -->
-            elif employee_type_id == '01104a75-e543-40c1-a6dc-175e2d2eb8aa':
-                experience = request.POST.get('experience')
-                species_name = request.POST.get('species_name')
-                query_insert_animal_care = '''INSERT INTO animal_care_trainer_and_specialist (employee_id, experience,species_id) 
-                VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s,(SELECT species_id FROM species WHERE species_name = %s))'''
-                success_ = execute_query(query_insert_animal_care, email, experience, species_name, query_type="INSERT")
+                # !-- Veterinarians Section -->
+                elif employee_type_id == '88f6ea93-ed8b-40c2-a727-6bd40044ef15': 
+                    license_number = request.POST.get('license_number')
+                    degree = request.POST.get('degree')
+                    specie_name = request.POST.get('specie_name')
+                    query_insert_veterinarian = ''' INSERT INTO veterinarian (employee_id, license_number, degree, species_id) 
+                    VALUES ((SELECT employee_id FROM employee WHERE emp_number = %s), %s, %s, (SELECT species_id FROM species WHERE species_name = %s)) '''
+                    success_ = execute_query(query_insert_veterinarian, emp_number, license_number, degree, specie_name, query_type="INSERT")
                 
+                # <!-- Animal Care Section -->
+                elif employee_type_id == '01104a75-e543-40c1-a6dc-175e2d2eb8aa':
+                    experience = request.POST.get('experience')
+                    species_name = request.POST.get('species_name')
+                    query_insert_animal_care = '''INSERT INTO animal_care_trainer_and_specialist (employee_id, experience,species_id) 
+                    VALUES ((SELECT employee_id FROM employee WHERE emp_number = %s), %s,(SELECT species_id FROM species WHERE species_name = %s))'''
+                    success_ = execute_query(query_insert_animal_care, emp_number, experience, species_name, query_type="INSERT")
+            
+            else:
+                # <!-- Ticket Sellers Section -->
+                if employee_type_id == '984b7fb8-dd36-4c96-939d-8bb57583b27c':
+                    shift = request.POST.get('shift')
+                    query_insert_ticket_seller ='''UPDATE ticket_seller SET shift = %s 
+                    WHERE employee_id = (SELECT employee_id FROM employee WHERE emp_number = %s);'''
+                    success_ = execute_query(query_insert_ticket_seller,shift, emp_number,  query_type="UPDATE")
+                    
+                # <!-- Customer Service Section -->
+                elif employee_type_id == 'fb91f4e8-9ce0-46e4-8f1c-30d06dfdd7ad':  
+                    concession_id = request.POST.get('concession_id')
+                    print('------------\n\n concession_id:',concession_id,'\n\n-----------')
+                    query_insert_customer_service = '''UPDATE customer_service SET concession_id = %s 
+                    WHERE employee_id = (SELECT employee_id FROM employee WHERE emp_number = %s);'''
+                    success_ = execute_query(query_insert_customer_service, concession_id, emp_number, query_type="UPDATE")
+                    
+                # <!-- Maintenance Section -->
+                elif employee_type_id == '084efa92-595e-4820-90d7-b330745770f1':
+                    specialization = request.POST.get('specialization')
+                    query_insert_maintenance = '''UPDATE maintenance SET specialization = %s 
+                    WHERE employee_id = (SELECT employee_id FROM employee WHERE emp_number = %s);'''
+                    success_ = execute_query(query_insert_maintenance,specialization, emp_number,  query_type='UPDATE')
+                
+                # !-- Veterinarians Section -->
+                elif employee_type_id == '88f6ea93-ed8b-40c2-a727-6bd40044ef15': 
+                    license_number = request.POST.get('license_number')
+                    degree = request.POST.get('degree')
+                    specie_name = request.POST.get('specie_name')
+                    query_insert_veterinarian = '''UPDATE veterinarian SET license_number = %s, degree = %s, species_id = (SELECT species_id FROM species WHERE species_name = %s)
+                    WHERE employee_id = (SELECT employee_id FROM employee WHERE emp_number = %s)'''
+                    success_ = execute_query(query_insert_veterinarian, license_number, degree, specie_name,emp_number, query_type="UPDATE")
+                
+                # <!-- Animal Care Section -->
+                elif employee_type_id == '01104a75-e543-40c1-a6dc-175e2d2eb8aa':
+                    experience = request.POST.get('experience')
+                    species_name = request.POST.get('species_name')
+                    query_insert_animal_care = '''UPDATE animal_care_trainer_and_specialist SET experience = %s, species_id = (SELECT species_id FROM species WHERE species_name = %s) 
+                    WHERE employee_id = (SELECT employee_id FROM employee WHERE emp_number = %s);'''
+                    success_ = execute_query(query_insert_animal_care,  experience, species_name, emp_number, query_type="UPDATE")      
 
             messages.success(request, 'Employee Updated successfully!')
             return redirect('employee_actions')
@@ -1000,7 +1041,7 @@ def delete_concession(request, concession_name):
 #                    Animal
 ######################################################
 def animal_actions(request):
-    query = '''SELECT a.animal_id,a.animal_name, s.species_name, e.enclosure_number, a.status, a.birth_year, a.tag_number
+    query = '''SELECT a.animal_id, s.species_name, e.enclosure_number, a.status, a.birth_year, a.tag_number
     FROM animals a JOIN species s ON a.species_id = s.species_id JOIN enclosure e ON a.enclosure_id = e.enclosure_id;'''
     Results, success = execute_query(query, None, query_type="SELECT")
 
@@ -1008,7 +1049,7 @@ def animal_actions(request):
         messages.error(request, "Failed to load concessions.")
         return render(request, 'error.html') 
     
-    columns_Animal = ['animal_id','animal_name','species_name','enclosure_number','status','birth_year','tag_number' ]
+    columns_Animal = ['animal_id','species_name','enclosure_number','status','birth_year','tag_number' ]
     animals = [dict(zip(columns_Animal, row)) for row in Results]
 
     return render(request, 'asset_management/animal/animal_action.html', {'animals': animals}) 
@@ -1041,22 +1082,21 @@ def add_animal(request):
 
     elif request.method == 'POST':
         # Retrieve data from form
-        animal_name = request.POST['animal_name']
         species_id = request.POST['species_id']
         enclosure_id = request.POST['enclosure_id']
         status = request.POST['status']
         birth_year = request.POST['birth_year']
 
         # Insert data into the database
-        insert_query = "INSERT INTO animals (species_id, enclosure_id, status, birth_year, animal_name) VALUES (%s, %s, %s, %s , %s)"
-        execute_query(insert_query, species_id, enclosure_id, status, birth_year, animal_name, query_type="INSERT")
+        insert_query = "INSERT INTO animals (species_id, enclosure_id, status, birth_year) VALUES (%s, %s, %s, %s , %s)"
+        execute_query(insert_query, species_id, enclosure_id, status, birth_year, query_type="INSERT")
         
         return redirect('animal_actions')  # Redirect to the list of animals
     
 def edit_animal(request, tag_number):
     if request.method == 'GET':
         # Fetch the specific animal's details using its ID
-        query = '''SELECT a.animal_id,a.animal_name, s.species_name, e.enclosure_number, a.status, a.birth_year,a.tag_number
+        query = '''SELECT a.animal_id, s.species_name, e.enclosure_number, a.status, a.birth_year,a.tag_number
         FROM animals a JOIN species s ON a.species_id = s.species_id JOIN enclosure e ON a.enclosure_id = e.enclosure_id
         WHERE a.tag_number = %s;'''
         Results, success = execute_query(query, tag_number, query_type="SELECT")
@@ -1065,7 +1105,7 @@ def edit_animal(request, tag_number):
             messages.error(request, "Failed to load concessions.")
             return render(request, 'error.html') 
         
-        columns_Animal = ['animal_id','animal_name','species_name','enclosure_number','status','birth_year','tag_number' ]
+        columns_Animal = ['animal_id','species_name','enclosure_number','status','birth_year','tag_number' ]
         animals = [dict(zip(columns_Animal, row)) for row in Results]
         
         # Fetch species from the database
@@ -1095,15 +1135,14 @@ def edit_animal(request, tag_number):
 
     if request.method == 'POST':
         # Retrieve updated data from form
-        animal_name = request.POST.get('animal_name')
         species_id = request.POST.get('species_id')
         enclosure_id = request.POST.get('enclosure_id')
         status = request.POST.get('status')
         birth_year = request.POST.get('birth_year')
         
         # Update the animal's data in the database
-        update_query = "UPDATE animals SET species_id = %s, enclosure_id = %s, status = %s, birth_year = %s, animal_name = %s WHERE tag_number = %s"
-        success = execute_query(update_query, species_id, enclosure_id, status, birth_year,animal_name, tag_number, query_type="UPDATE")
+        update_query = "UPDATE animals SET species_id = %s, enclosure_id = %s, status = %s, birth_year = %s WHERE tag_number = %s"
+        success = execute_query(update_query, species_id, enclosure_id, status, birth_year, tag_number, query_type="UPDATE")
         
         if success:
             messages.success(request, 'Animal updated successfully!')

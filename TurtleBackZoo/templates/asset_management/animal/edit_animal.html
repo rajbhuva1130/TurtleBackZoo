@@ -16,10 +16,6 @@
     <h1>Update Animal: {{ animal.animal_name }}</h1> 
     <form action="{% url 'edit_animal' animal.tag_number %}" method="post">
         {% csrf_token %}
-        <input type="hidden" name="current_animal_name" value="{{ animal.animal_name }}">
-
-        <label for="animal_name">Animal Name:</label><br>
-        <input type="text" id="animal_name" name="animal_name" value="{{ animal.animal_name }}" required><br>
 
         <label for="species">Species:</label><br>
         <select id="species" name="species_id" required>
@@ -32,10 +28,13 @@
         <label for="enclosure_id">Enclosure:</label><br>
         <select id="enclosure_id" name="enclosure_id" required>
             {% for enclosure in enclosures %}
-                <option value="{{ enclosure.enclosure_id }}"{% if enclosure.enclosure_id == animal.enclosure_id %}selected{% endif %}>
-                    {{ enclosure.enclosure_number }}</option>
+                <option value="{{ enclosure.enclosure_id }}"
+                        {% if enclosure.enclosure_id == animal.enclosure_id %} selected {% endif %}>
+                    {{ enclosure.enclosure_number }}
+                </option>
             {% endfor %}
         </select><br>
+
 
         <label for="status">Status:</label><br>
         <input type="text" id="status" name="status" value="{{ animal.status }}" required><br>

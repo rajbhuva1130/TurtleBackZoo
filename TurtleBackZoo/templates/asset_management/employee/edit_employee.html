@@ -68,8 +68,8 @@
     
         <!-- Customer Service Section -->
         <div id="fb91f4e8-9ce0-46e4-8f1c-30d06dfdd7ad" class="employee-section">
-            <label for="concession">Concessions name:</label>
-            <select id="concession_name" name="concession_name">
+            <label for="concession_id">Concessions name:</label>
+            <select id="concession_id" name="concession_id">
                 {% for concession in concessions %}
                     <option value="{{ concession.concession_id }}">{{ concession.concession_name }}</option>
                 {% endfor %}
