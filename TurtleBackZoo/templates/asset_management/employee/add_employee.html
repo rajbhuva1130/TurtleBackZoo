@@ -55,6 +55,7 @@
 
         <label for="Supervisor">Supervisor:</label>
         <select id="supervisor_id" name="supervisor_id" required>
+            <option value="">Select Supervisor</option>
             {% for supervisor in supervisors %}
                 <option value="{{ supervisor.supervisor_id  }}">{{ supervisor.supervisor_name }}</option>
             {% endfor %}
@@ -62,6 +63,7 @@
         
         <label for="employee_type">Employee Type:</label>
         <select id="employee_type_id" name="employee_type_id" required onchange="toggleEmployeeSections()">
+            <option value="">Select Employee Type</option>
             {% for employee in employee_types %}
                 <option value="{{ employee.employee_type_id }}">{{ employee.employee_type }}</option>
             {% endfor %}
@@ -77,6 +79,7 @@
         <div id="fb91f4e8-9ce0-46e4-8f1c-30d06dfdd7ad" class="employee-section">
             <label for="concession">Concessions name:</label>
             <select id="concession_name" name="concession_name">
+                <option value="">Select Concession</option>
                 {% for concession in concessions %}
                     <option value="{{ concession.concession_id }}">{{ concession.concession_name }}</option>
                 {% endfor %}
@@ -87,6 +90,7 @@
         <div id="084efa92-595e-4820-90d7-b330745770f1" class="employee-section">
             <label for="specialization">Specialization:</label>
             <select id="specialization" name="specialization">
+                <option value="">Select Specialization</option>
                 {% for specialization in specializations %}
                     <option value="{{ specialization.specialization }}">{{ specialization.specialization }}</option>
                 {% endfor %}

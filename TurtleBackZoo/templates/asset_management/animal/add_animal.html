@@ -8,6 +8,7 @@
         
         <label for="species_id">Species:</label>
         <select id="species_id" name="species_id" required>
+            <option value="">Select Species</option>
             {% for species in species %}
                 <option value="{{ species.species_id }}">{{ species.species_name }}</option>
             {% endfor %}
@@ -15,6 +16,7 @@
 
         <label for="enclosure_id">Enclosure:</label>
         <select id="enclosure_id" name="enclosure_id" required>
+            <option value="">Select Enclosure</option>
             {% for enclosure in enclosures %}
                 <option value="{{ enclosure.enclosure_id }}">{{ enclosure.enclosure_number }}</option>
             {% endfor %}

@@ -39,13 +39,13 @@ def building_actions(request):
             building = dict(zip(columns, row))  # Creating a dictionary for each row
             buildings.append(building)
         
-        return render(request, 'asset_management/building_actions.html', {'buildings': buildings})
+        return render(request, 'asset_management/building/building_actions.html', {'buildings': buildings})
     else:
         return render(request, 'error.html')  # Render an error page or handle failure accordingly
 
 def add_building(request):
     if request.method == 'GET':
-        return render(request, 'asset_management/add_building.html')
+        return render(request, 'asset_management/building/add_building.html')
     elif request.method == 'POST':
         building_name = request.POST.get('building_name')
         purpose = request.POST.get('purpose')
@@ -57,7 +57,7 @@ def add_building(request):
 
         if result:  # If a result is returned, building name already exists
             messages.error(request, 'Building with that name already exists!')
-            return render(request, 'asset_management/add_building.html')
+            return render(request, 'asset_management/building/add_building.html')
 
         # If building name doesn't exist, proceed with insertion
         query_insert = "INSERT INTO building (building_name, purpose, floors) VALUES (%s, %s, %s)"
@@ -68,7 +68,7 @@ def add_building(request):
             return redirect('building_actions')
         else:
             messages.error(request, 'Failed to add building!')
-            return render(request, 'asset_management/add_building.html')
+            return render(request, 'asset_management/building/add_building.html')
 
 def edit_building(request, name):
     if request.method == 'GET':
@@ -82,10 +82,8 @@ def edit_building(request, name):
             for row in results:
                 building = dict(zip(columns, row))  # Creating a dictionary for each row
                 buildings.append(building)
-            
-            # return render(request, 'asset_management/edit_building.html', {'buildings': buildings})
         
-            return render(request, 'asset_management/edit_building.html',{'building_old_name':name,'buildings': buildings})
+            return render(request, 'asset_management/building/edit_building.html',{'building_old_name':name,'buildings': buildings})
         else:
             return render(request, 'error.html')  # Render an error page or handle failure accordingly
     
@@ -97,14 +95,13 @@ def edit_building(request, name):
         # Update building information
         query_update = "UPDATE building SET building_name = %s, purpose = %s, floors = %s WHERE building_name = %s"
         success = execute_query(query_update, building_name, purpose, floors, name, query_type="UPDATE")
-    
-        
+
         if success:
             messages.success(request, 'Building updated successfully!')
             return redirect('building_actions')
         else:
             messages.error(request, 'Failed to update building!')
-            return render(request, 'asset_management/edit_building.html', {'building_name': name})
+            return render(request, 'asset_management/building/edit_building.html', {'building_name': name})
 
 def delete_building(request, name):
     if request.method == 'POST':
@@ -116,8 +113,6 @@ def delete_building(request, name):
             # Redirect if the deletion was successful and at least one row was affected
             return redirect('building_actions')
         
-    # Render the delete confirmation page if not a POST request or if deletion failed
-    return render(request, 'asset_management/delete_building.html', {'building_name': name})
 
 ######################################################
 #                    Employee
@@ -1155,3 +1150,101 @@ def delete_animal(request, tag_number):
         execute_query(delete_query, tag_number, query_type="DELETE")
 
         return redirect('animal_actions')
+
+######################################################
+#                    Enclosure
+######################################################
+
+def enclosure_actions(request):
+    query = '''SELECT e.enclosure_id, e.square_foot, e.enclosure_number,e.building_id, b.building_name
+    FROM enclosure e JOIN building b ON e.building_id = b.building_id;'''
+    results, success = execute_query(query, query_type='SELECT')
+
+    if not success:
+        messages.error(request, "Failed to load enclosures.")
+        return render(request, 'error.html')
+    
+    columns_enclosure = ['enclosure_id','square_foot','enclosure_number','building_id','building_name' ]
+    enclosures = [dict(zip(columns_enclosure, row)) for row in results] 
+
+    return render(request, 'asset_management/enclosure/enclosure_actions.html', {'enclosures': enclosures})
+
+def add_enclosure(request):
+    if request.method == 'GET':
+        # Fetch buildings from the database
+        query = "SELECT building_id, building_name FROM building;"
+        buildings, success = execute_query(query, query_type="SELECT")
+        
+        if not success:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_buildings = ['building_id','building_name']
+        buildings = [dict(zip(columns_buildings, row)) for row in buildings]
+        
+        return render(request,'asset_management/enclosure/add_enclosure.html',{'buildings' :buildings})
+
+    if request.method == 'POST':
+        building_id = request.POST.get('building_id')
+        square_foot = request.POST.get('square_foot')
+        enclosure_number = request.POST.get('enclosure_number')
+
+        query = "INSERT INTO enclosure (building_id, square_foot, enclosure_number) VALUES (%s, %s, %s);"
+        success = execute_query(query, building_id, square_foot, enclosure_number, query_type="INSERT")
+
+        if success:
+            messages.success(request, "New enclosure added successfully.")
+            return redirect('enclosure_actions')
+        else:
+            messages.error(request, "There was an error adding the enclosure.")
+
+    return render(request, 'asset_management/enclosure/add_enclosure.html')
+
+def edit_enclosure(request, enclosure_number):
+    if request.method == 'GET':
+        query = "SELECT * FROM enclosure WHERE enclosure_number = %s;"
+        results, success = execute_query(query, enclosure_number, query_type="SELECT")
+
+        if not success:
+            messages.error(request, "Failed to fetch the enclosure.")
+            return render(request, 'error.html')
+        
+        columns_enclosure = ['enclosure_id','building_id','square_foot','enclosure_number' ]
+        enclosures = [dict(zip(columns_enclosure, row)) for row in results] 
+        
+        # Fetch buildings from the database
+        query = "SELECT building_id, building_name FROM building;"
+        buildings, success = execute_query(query, query_type="SELECT")
+        
+        if not success:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_buildings = ['building_id','building_name']
+        buildings = [dict(zip(columns_buildings, row)) for row in buildings]
+
+        return render(request, 'asset_management/enclosure/edit_enclosure.html', {'enclosures': enclosures,'buildings' :buildings})
+
+    if request.method == 'POST':
+        current_enclosure_number = request.POST.get('current_enclosure_number')
+        building_id = request.POST.get('building_id')
+        square_foot = request.POST.get('square_foot')
+        enclosure_number = request.POST.get('enclosure_number')
+
+        query = "UPDATE enclosure SET square_foot = %s, enclosure_number = %s, building_id =%s WHERE enclosure_number = %s;"
+        success = execute_query(query, square_foot, enclosure_number, building_id, current_enclosure_number, query_type="UPDATE")
+
+        if success:
+            messages.success(request, "Enclosure updated successfully.")
+            return redirect('enclosure_actions')
+        else:
+            messages.error(request, "There was an error updating the enclosure.")
+
+    return render(request, 'asset_management/enclosure/edit_enclosure.html', {'enclosure': success})
+
+def delete_enclosure(request, enclosure_number):
+    if request.method == 'POST':
+        query = "DELETE FROM enclosure WHERE enclosure_number = %s;"
+        success = execute_query(query, enclosure_number, query_type="DELETE")
+        
+    return redirect('enclosure_actions')

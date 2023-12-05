@@ -18,12 +18,14 @@
         <input type="number" id="seats" name="seats" required><br>
         <label for="building_id">Building:</label><br>
         <select id="building_id" name="building_id" required>
+            <option value="">Select Building</option>
             {% for building in buildings %}
                 <option value="{{ building.building_id }}">{{ building.building_name }}</option>
             {% endfor %}
         </select><br>
         <label for="species">Species:</label><br>
         <select name="species_id" id="species">
+            <option value="">Select Species</option>
             {% for specie in species %}
                 <option value="{{ specie.species_id }}">{{ specie.species_name }}</option>
             {% endfor %}

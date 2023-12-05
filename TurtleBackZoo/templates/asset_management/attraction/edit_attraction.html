@@ -31,6 +31,7 @@
 
         <label for="building">Building new:</label><br>
         <select id="building" name="building_id" required>
+            <option value="">Select Building</option>
             {% for building in buildings %}
                 <option value="{{ building.building_id }}" {% if building.building_id == attraction.building_id %}selected{% endif %}>
                     {{ building.building_name }}
@@ -46,6 +47,7 @@
                 <label for="building"> Old Species Name: {{ requirement.species_id }}</label><br>
                 <label for="building">   Note: if you want to change Species then select new Species in drop down otherwise selecct same</label><br>
                 <select name="species_id" id="species">
+                    <option value="">Select Species</option>
                     {% for specie in species %}
                         <option value="{{ specie.species_id }}" {% if specie.species_id == current_species_id %}selected{% endif %}>
                             {{ specie.species_name }}

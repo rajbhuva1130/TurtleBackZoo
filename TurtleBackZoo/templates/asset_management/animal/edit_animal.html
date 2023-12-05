@@ -18,7 +18,8 @@
         {% csrf_token %}
 
         <label for="species">Species:</label><br>
-        <select id="species" name="species_id" required>
+        <select id="species" name="species_id" required>  
+            <option value="">Select Species</option>
             {% for species in species %}
                 <option value="{{ species.species_id }}" {% if species.species_id == animal.species_id %}selected{% endif %}>
                     {{ species.species_name }}
@@ -27,6 +28,7 @@
         </select><br>
         <label for="enclosure_id">Enclosure:</label><br>
         <select id="enclosure_id" name="enclosure_id" required>
+            <option value="">Select Enclosure</option>
             {% for enclosure in enclosures %}
                 <option value="{{ enclosure.enclosure_id }}"
                         {% if enclosure.enclosure_id == animal.enclosure_id %} selected {% endif %}>

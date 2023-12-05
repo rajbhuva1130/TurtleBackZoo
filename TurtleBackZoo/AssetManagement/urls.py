@@ -40,4 +40,10 @@ urlpatterns = [
     path('animal/add_animal/', views.add_animal, name='add_animal'),
     path('animal/edit_animal/<int:tag_number>/', views.edit_animal, name='edit_animal'),
     path('animal/delete_animal/<int:tag_number>/', views.delete_animal, name='delete_animal'),
+    
+    # Enclosure's Links
+    path('enclosure/', views.enclosure_actions, name='enclosure_actions'),
+    path('enclosure/add_enclosure/', views.add_enclosure, name='add_enclosure'),
+    path('enclosure/edit_enclosure/<str:enclosure_number>/', views.edit_enclosure, name='edit_enclosure'),
+    path('enclosure/delete_enclosure/<str:enclosure_number>/', views.delete_enclosure, name='delete_enclosure'),
 ]
