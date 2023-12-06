@@ -52,4 +52,11 @@ urlpatterns = [
     path('show/add_show/', views.add_show, name='add_show'),
     path('show/edit_show/<str:show_id>/', views.edit_show, name='edit_show'),
     path('show/delete_show/<str:show_id>/', views.delete_show, name='delete_show'),
+    
+    # product's Links
+    path('product/', views.product_actions, name='product_actions'),
+    path('product/add_product/', views.add_product, name='add_product'),
+    path('product/edit_product/<str:product_id>/', views.edit_product, name='edit_product'),
+    path('product/delete_product/<str:product_id>/', views.delete_product, name='delete_product'),
 ]
+

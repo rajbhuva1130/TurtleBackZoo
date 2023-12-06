@@ -1267,7 +1267,6 @@ def show_actions(request):
 
     return render(request, 'asset_management/show/show_actions.html', {'shows': shows})
 
-
 def add_show(request):
     if request.method == 'GET':
         # Fetch attraction from the database
@@ -1360,3 +1359,145 @@ def delete_show(request, show_id):
             messages.error(request, "There was an error deleting the show.")
 
     return redirect('show_actions')
+
+######################################################
+#                    Product
+######################################################
+
+def product_actions(request):
+    # SQL query to select all products and the concession they belong to
+    query = '''
+    SELECT p.product_id, p.product_name, p.price, c.concession_name
+    FROM product p
+    LEFT JOIN concession_product cp ON p.product_id = cp.product_id
+    LEFT JOIN concession c ON cp.concession_id = c.concession_id;
+    '''
+    results, success = execute_query(query, query_type='SELECT')
+
+    if not success:
+        messages.error(request, "Failed to load products and their concessions.")
+        return render(request, 'error.html')
+
+    # Define column names as they are expected in the results
+    columns_product = ['product_id', 'product_name', 'price', 'concession_name']
+    products = [dict(zip(columns_product, row)) for row in results]
+
+    # Render the product actions page with the products data
+    return render(request, 'asset_management/product/product_actions.html', {'products': products})
+
+def add_product(request):
+    if request.method == 'GET':
+        # Fetch concession from the database
+        query = "SELECT concession_id, concession_name FROM concession;"
+        concession, success = execute_query(query, query_type="SELECT")
+        
+        if not success:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_concession = ['concession_id','concession_name']
+        concessions = [dict(zip(columns_concession, row)) for row in concession]
+        
+        return render(request, 'asset_management/product/add_product.html', {'concessions':concessions})
+    
+    if request.method == 'POST':
+        product_name = request.POST.get('product_name')
+        price = request.POST.get('price')
+        concession_id = request.POST.get('concession_id')
+
+        query = "INSERT INTO product (product_name, price) VALUES (%s, %s);"
+        success = execute_query(query, product_name, price, query_type="INSERT")
+        
+        query = "SELECT product_id FROM product WHERE product_name =%s; "
+        product_id_, success = execute_query(query, product_name, query_type="SELECT")
+        product_id = product_id_[0][0]
+        
+        # If a concession_id was provided, link the product to the concession
+        if success and concession_id:
+            query = "INSERT INTO concession_product (concession_id, product_id) VALUES (%s, %s);"
+            success = execute_query(query, concession_id, product_id, query_type="INSERT")
+
+        if success:
+            messages.success(request, "Product added successfully.")
+            return redirect('product_actions')
+        else:
+            messages.error(request, "Failed to add product.")
+
+    # Render the add product form template
+    return render(request, 'asset_management/product/add_product.html')
+
+def edit_product(request, product_id):
+    if request.method == 'GET':
+        # Fetch the product details along with its concession
+        query = '''SELECT p.product_id, p.product_name, p.price, c.concession_name
+        FROM product p LEFT JOIN concession_product cp ON p.product_id = cp.product_id
+        LEFT JOIN concession c ON cp.concession_id = c.concession_id
+        WHERE p.product_id = %s;'''
+        product, success = execute_query(query, product_id, query_type='SELECT')
+
+        if not success:
+            messages.error(request, "Failed to load product details.")
+            return render(request, 'error.html')
+        
+        columns_product = ['product_id','product_name','price','concession_name']
+        products = [dict(zip(columns_product, row)) for row in product]
+        
+        # Fetch concession from the database
+        query = "SELECT concession_id, concession_name FROM concession;"
+        concession, success = execute_query(query, query_type="SELECT")
+        
+        if not success:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_concession = ['concession_id','concession_name']
+        concessions = [dict(zip(columns_concession, row)) for row in concession]
+
+        # Render the edit product form template with product details
+        return render(request, 'asset_management/product/edit_product.html', {'products': products,'concessions':concessions})
+
+    if request.method == 'POST':
+        product_name = request.POST.get('product_name')
+        price = request.POST.get('price')
+        concession_id = request.POST.get('concession_id')
+        
+        query = "UPDATE product SET product_name = %s, price = %s WHERE product_id = %s;"
+        success = execute_query(query, product_name, price, product_id, query_type="UPDATE")
+
+        # Update the concession_product link
+        if success:
+            # First, remove any existing link
+            query = "DELETE FROM concession_product WHERE product_id = %s;"
+            execute_query(query, product_id, query_type="DELETE")
+
+            # If a concession_id was provided, create a new link
+            if concession_id:
+                query = "INSERT INTO concession_product (concession_id, product_id) VALUES (%s, %s);"
+                success = execute_query(query, concession_id, product_id, query_type="INSERT")
+
+        if success:
+            messages.success(request, "Product updated successfully.")
+            return redirect('product_actions')
+        else:
+            messages.error(request, "Failed to update product.")
+
+    # Render the edit product form template
+    return render(request, 'asset_management/product//edit_product.html')
+
+def delete_product(request, product_id):
+    if request.method == 'POST':
+        
+        query = "DELETE FROM concession_product WHERE product_id = %s;"
+        success = execute_query(query, product_id, query_type="DELETE")
+
+        # Delete the product
+        if success:
+            query = "DELETE FROM product WHERE product_id = %s;"
+            success = execute_query(query, product_id, query_type="DELETE")
+
+        if success:
+            messages.success(request, "Product deleted successfully.")
+        else:
+            messages.error(request, "Failed to delete product.")
+
+    return redirect('product_actions')
