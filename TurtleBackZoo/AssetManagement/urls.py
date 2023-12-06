@@ -58,5 +58,12 @@ urlpatterns = [
     path('product/add_product/', views.add_product, name='add_product'),
     path('product/edit_product/<str:product_id>/', views.edit_product, name='edit_product'),
     path('product/delete_product/<str:product_id>/', views.delete_product, name='delete_product'),
+    
+    # species's Links
+    path('species/', views.species_actions, name='species_actions'),
+    path('species/add_species/', views.add_species, name='add_species'),
+    path('species/info_species/<str:species_id>/', views.info_species, name='info_species'),
+    path('species/edit_species/<str:species_id>/', views.edit_species, name='edit_species'),
+    path('species/delete_species/<str:species_id>/', views.delete_species, name='delete_species'),
 ]
 

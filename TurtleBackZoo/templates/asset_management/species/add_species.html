@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Add New Species</h1>
+    <form action="{% url 'add_species' %}" method="post">
+        {% csrf_token %}
+        
+        <!-- Species Name Input -->
+        <label for="species_name">Species:</label>
+        <input type="text" id="species_name" name="species_name"><br>
+        
+        <!-- Habitat Input -->
+        <label for="habitat">Habitat:</label>
+        <input type="text" id="habitat" name="habitat"><br>
+
+        <!-- Diet Input -->
+        <label for="diet">Diet:</label>
+        <input type="text" id="diet" name="diet"><br>
+
+        <!-- Monthly Food Cost Input -->
+        <label for="monthly_food_cost">Monthly Food Cost:</label>
+        <input type="number" step="0.01" id="monthly_food_cost" name="monthly_food_cost" required><br>
+
+        <!-- Species Type Input -->
+        <label for="species_type">Species Type:</label>
+        <select id="species_type" name="species_type" required onchange="updateSpeciesTypeFields()">
+            <option value="">Select Species</option>
+            <option data-type="Bird" value="Bird" {% if species.species_type == 'Bird' %} selected {% endif %}>Bird</option>
+                <option data-type="Mammal" value="Mammal" {% if species.species_type == 'Mammal' %} selected {% endif %}>Mammal</option>
+                <option data-type="Reptile" value="Reptile" {% if species.species_type == 'Reptile' %} selected {% endif %}>Reptile</option>
+                <option data-type="Aquatic" value="Aquatic" {% if species.species_type == 'Aquatic' %} selected {% endif %}>Aquatic</option>
+        </select><br>
+        
+
+        <!-- Additional Fields Container -->
+        <div id="additionalFields"></div>
+
+        <input type="submit" value="Add Species">
+    </form>
+</div>
+
+<script>
+    function updateSpeciesTypeFields() {
+        const speciesSelect = document.getElementById('species_type');
+        const fieldsDiv = document.getElementById('additionalFields');
+        const selectedType = speciesSelect.options[speciesSelect.selectedIndex].getAttribute('data-type');
+      
+        // Check if existing fields exist
+        const existingFields = fieldsDiv.querySelectorAll('*');
+      
+        // Clear existing fields only if previous selection was made
+        if (existingFields.length > 0) {
+          fieldsDiv.innerHTML = '';
+        }
+      
+        // Add fields based on species type
+        if (selectedType === 'Bird') {
+          // Add bird-specific fields
+          fieldsDiv.innerHTML += `<label for="feather_type">Feather Type:</label><input type="text" id="feather_type" name="feather_type"><br>`;
+          fieldsDiv.innerHTML += `<label for="nesting_behaviour">Nesting Behaviour:</label><input type="text" id="nesting_behaviour" name="nesting_behaviour"><br>`;
+          fieldsDiv.innerHTML += `<label for="migratory">Migratory:</label><input type="checkbox" id="migratory" name="migratory"><br>`;
+        } 
+        else if (selectedType === 'Mammal') {
+            // Add fields specific to mammals
+            fieldsDiv.innerHTML += '<label for="fur_type">Fur Type:</label><input type="text" id="fur_type" name="fur_type"><br>';
+            fieldsDiv.innerHTML += '<label for="gestation_period">Gestation Period:</label><input type="number" step="0.01" id="gestation_period" name="gestation_period"><br>';
+        }
+        else if (selectedType === 'Reptile') {
+            // Add fields specific to reptiles
+            fieldsDiv.innerHTML += '<label for="scale_type">Scale Type:</label><input type="text" id="scale_type" name="scale_type"><br>';
+            fieldsDiv.innerHTML += '<label for="temperature_range">Temperature Range:</label><input type="text" id="temperature_range" name="temperature_range"><br>';
+            fieldsDiv.innerHTML += '<label for="venomous">Venomous:</label><input type="checkbox" id="venomous" name="venomous"><br>';
+        }
+        else if (selectedType === 'Aquatic') {
+            // Add fields specific to aquatic species
+            fieldsDiv.innerHTML += '<label for="finned_type">Finned Type:</label><input type="text" id="finned_type" name="finned_type"><br>';
+            fieldsDiv.innerHTML += '<label for="average_length">Average Length:</label><input type="number" id="average_length" name="average_length"><br>';
+        }        
+      }
+      
+</script>
+{% endblock %}

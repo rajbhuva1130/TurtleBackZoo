@@ -1044,7 +1044,6 @@ def animal_actions(request):
     animals = [dict(zip(columns_Animal, row)) for row in Results]  
 
     return render(request, 'asset_management/animal/animal_action.html', {'animals': animals}) 
- 
        
 def add_animal(request):
     if request.method == 'GET':
@@ -1501,3 +1500,319 @@ def delete_product(request, product_id):
             messages.error(request, "Failed to delete product.")
 
     return redirect('product_actions')
+
+######################################################
+#                    Species
+######################################################
+def species_actions(request):
+    # SQL query to select all species
+    query = "SELECT species_id, species_name, habitat, diet, monthly_food_cost, species_type FROM species;"
+    results, success = execute_query(query, query_type='SELECT')
+
+    if not success:
+        messages.error(request, "Failed to load species.")
+        return render(request, 'error.html')
+
+    # Define column names as they appear in the database
+    columns_species = ['species_id', 'species_name', 'habitat', 'diet', 'monthly_food_cost', 'species_type']
+    species = [dict(zip(columns_species, row)) for row in results]
+
+    # Render the species actions page with the species data
+    return render(request, 'asset_management/species/species_actions.html', {'species': species})
+
+def info_species(request, species_id):
+    species_type = request.GET.get('species_type')
+    query = "SELECT * FROM species WHERE species_id = %s;"
+    results, success = execute_query(query, species_id, query_type='SELECT')
+
+    if not success:
+        messages.error(request, "Failed to load species details.")
+        return render(request, 'error.html')
+    
+    species = []
+    columns_species = ['species_id', 'species_name', 'habitat', 'diet', 'monthly_food_cost', 'species_type']
+    for row in results:
+        species_ = dict(zip(columns_species, row)) 
+        species.append(species_)
+    
+     # Retrieve additional information based species_type
+    if species_type == 'Bird':
+        bird_info_query = "SELECT feather_type, nesting_behaviour, migratory FROM bird WHERE species_id = %s"
+        bird_info_results, _ = execute_query(bird_info_query, species_id, query_type="SELECT")
+        columns_bird = ['feather_type','nesting_behaviour','migratory']
+        for row in bird_info_results:
+            bird_data =dict(zip(columns_bird,row))
+            species[0].update(bird_data)
+        
+    elif species_type == 'Mammal':
+        mammal_info_query = "SELECT fur_type, gestation_period FROM mammal WHERE species_id = %s"
+        mammal_info_results, _ = execute_query(mammal_info_query, species_id, query_type="SELECT")
+        columns_mammal = ['fur_type','gestation_period']
+        for row in mammal_info_results:
+            mammal_data = dict(zip(columns_mammal,row))
+            species[0].update(mammal_data)
+        
+    elif species_type == 'Reptile':
+        reptile_info_query = "SELECT scale_type, temperature_range, venomous FROM reptile WHERE species_id = %s"
+        reptile_info_results, _ = execute_query(reptile_info_query, species_id, query_type="SELECT")
+        columns_reptile = ['scale_type','temperature_range','venomous']
+        for row in reptile_info_results:
+            reptile_data = dict(zip(columns_reptile,row))
+            species[0].update(reptile_data)
+    
+    elif species_type == 'Aquatic':
+        aquatic_info_query = "SELECT finned_type, average_length FROM aquatic WHERE species_id = %s"
+
+        aquatic_info_results, _ = execute_query(aquatic_info_query, species_id, query_type="SELECT")
+        columns_aquatic = ['finned_type','average_length']
+        for row in aquatic_info_results:
+            aquatic_data = dict(zip(columns_aquatic,row))
+            species[0].update(aquatic_data)
+    
+
+    return render(request, 'asset_management/species/info_species.html', {'species': species})
+
+def add_species(request):
+    if request.method == 'GET':
+        # Fetch species from the database
+        species_query = "SELECT DISTINCT species_id, species_name,species_type FROM species;"
+        species, species_success = execute_query(species_query, query_type="SELECT")
+
+        if not species_success:
+            messages.error(request, 'Failed to fetch species!')
+            return render(request, 'error.html')
+
+        columns_species = ['species_id', 'species_name','species_type']
+        species = [dict(zip(columns_species, row)) for row in species]
+        
+        return render(request, 'asset_management/species/add_species.html',{'species': species})
+        
+    if request.method == 'POST':
+        species_name = request.POST.get('species_name')
+        habitat = request.POST.get('habitat')
+        diet = request.POST.get('diet')
+        monthly_food_cost = request.POST.get('monthly_food_cost')
+        species_type = request.POST.get('species_type')
+        
+        species_query = "INSERT INTO species (species_name, habitat, diet, monthly_food_cost, species_type) VALUES (%s, %s, %s, %s, %s);"
+        success = execute_query(species_query, species_name, habitat, diet, monthly_food_cost, species_type, query_type="INSERT")
+
+        if not success:
+            messages.error(request, "There was an error adding the species.")
+            return render(request, 'asset_management/species/add_species.html')
+        
+        else:
+            query = "SELECT species_id FROM species WHERE species_name =%s;"
+            species_id_,success_ = execute_query(query,species_name,query_type='SELECT') 
+            species_id = species_id_[0][0]
+
+            
+            # Depending on the species type, insert additional data into the respective table
+            if species_type == 'Mammal':
+                fur_type = request.POST.get('fur_type')
+                gestation_period = request.POST.get('gestation_period')
+                mammal_query = "INSERT INTO mammal (species_id, fur_type, gestation_period) VALUES (%s, %s, %s);"
+                success = execute_query(mammal_query, species_id, fur_type, gestation_period, query_type="INSERT")
+
+            elif species_type == 'Bird':
+                feather_type = request.POST.get('feather_type')
+                nesting_behaviour = request.POST.get('nesting_behaviour')
+                migratory = request.POST.get('migratory') == 'on'
+                bird_query = "INSERT INTO bird (species_id, feather_type, nesting_behaviour, migratory) VALUES (%s, %s, %s, %s);"
+                success = execute_query(bird_query, species_id, feather_type, nesting_behaviour, migratory, query_type="INSERT")
+                
+            elif species_type == 'Reptile':
+                scale_type = request.POST.get('scale_type')
+                temperature_range = request.POST.get('temperature_range')
+                venomous = request.POST.get('venomous') == 'on'
+                reptile_query = "INSERT INTO reptile (species_id, scale_type, temperature_range, venomous) VALUES (%s, %s, %s, %s);"
+                success = execute_query(reptile_query, species_id, scale_type, temperature_range, venomous, query_type="INSERT")
+
+            elif species_type == 'Aquatic':
+                finned_type = request.POST.get('finned_type')
+                average_length = request.POST.get('average_length')
+                aquatic_query = "INSERT INTO aquatic (species_id, finned_type, average_length) VALUES (%s, %s, %s);"
+                success = execute_query(aquatic_query, species_id, finned_type, average_length, query_type="INSERT")
+
+            if not success:
+                # If there was an error inserting type-specific data, delete the species entry and rollback the transaction
+                delete_query = "DELETE FROM species WHERE species_id = %s;"
+                execute_query(delete_query, species_id, query_type="DELETE")
+                messages.error(request, "There was an error adding the type-specific data for the species.")
+                return render(request, 'asset_management/species/add_species.html')
+
+            messages.success(request, "New species and its type-specific data added successfully.")
+            return redirect('species_actions')
+
+    return render(request, 'asset_management/species/add_species.html')
+
+def edit_species(request, species_id):
+    if request.method == 'GET':
+        species_type = request.GET.get('species_type')
+        query = "SELECT * FROM species WHERE species_id = %s;"
+        results, success = execute_query(query, species_id, query_type='SELECT')
+
+        if not success:
+            messages.error(request, "Failed to load species details.")
+            return render(request, 'error.html')
+        
+        species = []
+        columns_species = ['species_id', 'species_name', 'habitat', 'diet', 'monthly_food_cost', 'species_type']
+        for row in results:
+            species_ = dict(zip(columns_species, row)) 
+            species.append(species_)
+        
+        # Retrieve additional information based species_type
+        if species_type == 'Bird':
+            bird_info_query = "SELECT feather_type, nesting_behaviour, migratory FROM bird WHERE species_id = %s"
+            bird_info_results, _ = execute_query(bird_info_query, species_id, query_type="SELECT")
+            columns_bird = ['feather_type','nesting_behaviour','migratory']
+            for row in bird_info_results:
+                bird_data =dict(zip(columns_bird,row))
+                species[0].update(bird_data)
+            
+        elif species_type == 'Mammal':
+            mammal_info_query = "SELECT fur_type, gestation_period FROM mammal WHERE species_id = %s"
+            mammal_info_results, _ = execute_query(mammal_info_query, species_id, query_type="SELECT")
+            columns_mammal = ['fur_type','gestation_period']
+            for row in mammal_info_results:
+                mammal_data = dict(zip(columns_mammal,row))
+                species[0].update(mammal_data)
+            
+        elif species_type == 'Reptile':
+            reptile_info_query = "SELECT scale_type, temperature_range, venomous FROM reptile WHERE species_id = %s"
+            reptile_info_results, _ = execute_query(reptile_info_query, species_id, query_type="SELECT")
+            columns_reptile = ['scale_type','temperature_range','venomous']
+            for row in reptile_info_results:
+                reptile_data = dict(zip(columns_reptile,row))
+                species[0].update(reptile_data)
+        
+        elif species_type == 'Aquatic':
+            aquatic_info_query = "SELECT finned_type, average_length FROM aquatic WHERE species_id = %s"
+
+            aquatic_info_results, _ = execute_query(aquatic_info_query, species_id, query_type="SELECT")
+            columns_aquatic = ['finned_type','average_length']
+            for row in aquatic_info_results:
+                aquatic_data = dict(zip(columns_aquatic,row))
+                species[0].update(aquatic_data)
+        
+
+        return render(request, 'asset_management/species/edit_species.html', {'species': species})
+
+    if request.method == 'POST':
+        current_species_type = request.POST.get('current_species_type')
+        species_name = request.POST.get('species_name')
+        habitat = request.POST.get('habitat')
+        diet = request.POST.get('diet')
+        monthly_food_cost = request.POST.get('monthly_food_cost')
+        species_type = request.POST.get('species_type')
+
+        # Additional attributes
+        feather_type = request.POST.get('feather_type')
+        nesting_behaviour = request.POST.get('nesting_behaviour')
+        migratory = request.POST.get('migratory') == 'on'  # Convert checkbox to boolean
+        fur_type = request.POST.get('fur_type')
+        gestation_period = request.POST.get('gestation_period')
+        scale_type = request.POST.get('scale_type')
+        temperature_range = request.POST.get('temperature_range')
+        venomous = request.POST.get('venomous') == 'on'  # Convert checkbox to boolean
+        finned_type = request.POST.get('finned_type')
+        average_length = request.POST.get('average_length')
+
+        query = "UPDATE species SET species_name = %s, habitat = %s, diet = %s, monthly_food_cost = %s, species_type = %s WHERE species_id = %s;"
+        success = execute_query(query, species_name, habitat, diet, monthly_food_cost, species_type, species_id, query_type="UPDATE")
+
+        if success:
+            def delete_previous_species_type_data(current_species_type):
+                # Map species type ID to the respective table and column name
+                type_table_map = {
+                    'Bird': ('bird', 'species_id'),
+                    'Mammal': ('mammal', 'species_id'),
+                    'Reptile': ('reptile', 'species_id'),
+                    'Aquatic': ('aquatic', 'species_id')
+                }
+                result = type_table_map.get(current_species_type)
+                if result:
+                    table, column = result
+                    query_delete = f"DELETE FROM {table} WHERE {column} = %s;"
+                    execute_query(query_delete, species_id, query_type="DELETE")
+                    # Note: Handle exceptions as needed
+                else:
+                    print(f"No mapping found for species_type_id: {current_species_type}")
+                    
+            if current_species_type != species_type:
+                delete_previous_species_type_data(current_species_type)
+                # Insert new species type details
+                if species_type == 'Mammal':
+                    fur_type = request.POST.get('fur_type')
+                    gestation_period = request.POST.get('gestation_period')
+                    mammal_query = "INSERT INTO mammal (species_id, fur_type, gestation_period) VALUES (%s, %s, %s);"
+                    success = execute_query(mammal_query, species_id, fur_type, gestation_period, query_type="INSERT")
+
+                elif species_type == 'Bird':
+                    feather_type = request.POST.get('feather_type')
+                    nesting_behaviour = request.POST.get('nesting_behaviour')
+                    migratory = request.POST.get('migratory') == 'on'
+                    bird_query = "INSERT INTO bird (species_id, feather_type, nesting_behaviour, migratory) VALUES (%s, %s, %s, %s);"
+                    success = execute_query(bird_query, species_id, feather_type, nesting_behaviour, migratory, query_type="INSERT")
+                    
+                elif species_type == 'Reptile':
+                    scale_type = request.POST.get('scale_type')
+                    temperature_range = request.POST.get('temperature_range')
+                    venomous = request.POST.get('venomous') == 'on'
+                    reptile_query = "INSERT INTO reptile (species_id, scale_type, temperature_range, venomous) VALUES (%s, %s, %s, %s);"
+                    success = execute_query(reptile_query, species_id, scale_type, temperature_range, venomous, query_type="INSERT")
+
+                elif species_type == 'Aquatic':
+                    finned_type = request.POST.get('finned_type')
+                    average_length = request.POST.get('average_length')
+                    aquatic_query = "INSERT INTO aquatic (species_id, finned_type, average_length) VALUES (%s, %s, %s);"
+                    success = execute_query(aquatic_query, species_id, finned_type, average_length, query_type="INSERT")
+                
+                messages.success(request, "Species updated successfully.")
+                return redirect('species_actions')
+
+            else:
+                if species_type == 'Bird':
+                    bird_query = """UPDATE bird SET feather_type = %s, nesting_behaviour = %s,
+                        migratory = %s WHERE species_id = %s;"""
+                    additional_attributes_success = execute_query(bird_query, feather_type, nesting_behaviour, migratory, species_id, query_type="UPDATE")
+                
+                elif species_type == 'Mammal':
+                    mammal_query = """UPDATE mammal SET fur_type = %s,
+                    gestation_period = %s WHERE species_id = %s;"""
+                    additional_attributes_success = execute_query(mammal_query, fur_type, gestation_period, species_id, query_type="UPDATE")
+                
+                elif species_type == 'Reptile':
+                    reptile_query = """UPDATE reptile SET scale_type = %s, temperature_range = %s,
+                    venomous = %s WHERE species_id = %s;"""
+                    additional_attributes_success = execute_query(reptile_query, scale_type, temperature_range, venomous, species_id, query_type="UPDATE")
+                
+                elif species_type == 'Aquatic':
+                    aquatic_query = """UPDATE aquatic SET finned_type = %s,
+                        average_length = %s WHERE species_id = %s;"""
+                    additional_attributes_success = execute_query(aquatic_query, finned_type, average_length, species_id, query_type="UPDATE")
+                    
+                messages.success(request, "Species updated successfully.")
+                return redirect('species_actions')
+            
+        else:
+            messages.error(request, "There was an error updating the species.")
+
+def delete_species(request, species_id):
+    if request.method == 'POST':
+            type_tables = ['mammal', 'bird', 'reptile', 'aquatic']
+            for table in type_tables:
+                delete_related_query = f"DELETE FROM {table} WHERE species_id = %s;"
+                execute_query(delete_related_query, species_id, query_type="DELETE")
+
+            # Now, attempt to delete the species
+            delete_species_query = "DELETE FROM species WHERE species_id = %s;"
+            success = execute_query(delete_species_query, species_id, query_type="DELETE")
+
+            if success:
+                messages.success(request, "Species and all related records deleted successfully.")
+            else:
+                messages.error(request, "There was an error deleting the species.")
+
+    return redirect('species_actions')
