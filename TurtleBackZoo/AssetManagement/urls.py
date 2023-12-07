@@ -65,5 +65,11 @@ urlpatterns = [
     path('species/info_species/<str:species_id>/', views.info_species, name='info_species'),
     path('species/edit_species/<str:species_id>/', views.edit_species, name='edit_species'),
     path('species/delete_species/<str:species_id>/', views.delete_species, name='delete_species'),
+    
+    # hourly_wages's Links
+    path('hourly_wages/', views.hourly_wages_actions, name='hourly_wages_actions'),
+    path('hourly_wages/add_hourly_wages/', views.add_hourly_wages, name='add_hourly_wages'),
+    path('hourly_wages/edit_hourly_wages/<str:employee_type_id>/', views.edit_hourly_wages, name='edit_hourly_wages'),
+    path('hourly_wages/delete_hourly_wages/<str:employee_type_id>/', views.delete_hourly_wages, name='delete_hourly_wages'),
 ]
 

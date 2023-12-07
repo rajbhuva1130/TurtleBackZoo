@@ -1289,9 +1289,12 @@ def add_show(request):
         date = request.POST.get('date')
         time = request.POST.get('time')
         revenue = request.POST.get('revenue')
+        
+        print("-----\n\n time:",time,"\n\n-----")
+        # type cast time
 
         # SQL query to insert new show
-        query = "INSERT INTO show (attraction_id, tickets_sold, status, date, Time, revenue) VALUES (%s, %s, %s, %s, %s, %s);"
+        query = "INSERT INTO show (attraction_id, tickets_sold, status,date,\"Time\", revenue) VALUES (%s, %s, %s, %s, %s, %s);"
         success = execute_query(query, attraction_id, tickets_sold, status, date, time, revenue, query_type="INSERT")
 
         if success:
@@ -1816,3 +1819,80 @@ def delete_species(request, species_id):
                 messages.error(request, "There was an error deleting the species.")
 
     return redirect('species_actions')
+
+######################################################
+#                   Hourly Wages
+######################################################
+
+def hourly_wages_actions(request):
+    # Assuming 'execute_query' is a utility function you've defined to run database queries
+    query = "SELECT employee_type_id, employee_type, rate FROM employee_type;"
+    results, success = execute_query(query, query_type='SELECT')
+
+    if not success:
+        messages.error(request, "Failed to load Hourly Wage.")
+        return render(request, 'error.html') 
+    
+    columns_employee_type = ['employee_type_id','employee_type','rate']
+    employee_types = [dict(zip(columns_employee_type, row)) for row in results]
+
+    return render(request, 'asset_management/hourly_wages/hourly_wages_actions.html', {'employee_types': employee_types}) 
+
+def add_hourly_wages(request):
+    if request.method == 'POST':
+        employee_type = request.POST.get('employee_type')
+        rate = request.POST.get('rate')
+        query = "INSERT INTO employee_type (employee_type,rate) VALUES (%s, %s);"
+        success = execute_query(query, employee_type, rate, query_type="INSERT")
+
+        if success:
+            messages.success(request, "New Hourly Wage added successfully.")
+            return redirect('hourly_wages_actions')
+        else:
+            messages.error(request, "There was an error adding the Hourly Wage.")
+
+    return render(request, 'asset_management/hourly_wages/add_hourly_wages.html')
+
+def edit_hourly_wages(request, employee_type_id):
+    if request.method == 'GET':
+        query = '''SELECT employee_type_id, employee_type, rate FROM employee_type WHERE employee_type_id = %s;'''
+        results, success = execute_query(query, employee_type_id, query_type="SELECT")
+        
+        if not success:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_employee_type = ['employee_type_id','employee_type','rate']
+        employee_types = [dict(zip(columns_employee_type, row)) for row in results]
+
+        return render(request, 'asset_management/hourly_wages/edit_hourly_wages.html', {'employee_types':employee_types})
+    
+    
+    if request.method == 'POST':
+        employee_type = request.POST.get('employee_type')
+        rate = request.POST.get('rate')
+        # Assume you have a function execute_query that handles your database interaction
+        query = "UPDATE employee_type SET employee_type = %s, rate = %s WHERE employee_type_id = %s;"
+        success = execute_query(query, employee_type, rate, employee_type_id, query_type="UPDATE")
+
+        if success:
+            messages.success(request, "Hourly Wages updated successfully.")
+            return redirect('hourly_wages_actions')
+        else:
+            messages.error(request, "There was an error updating the Hourly Wages.")
+
+    return render(request, 'asset_management/hourly_wages/edit_hourly_wages.html', {'employee_types':employee_types})
+
+def delete_hourly_wages(request, employee_type_id):
+    if request.method == 'POST':
+        # Perform the delete operation
+        query = "DELETE FROM employee_type WHERE employee_type_id = %s;"
+        success = execute_query(query, employee_type_id, query_type="DELETE")
+        
+        if success:
+            messages.success(request, "Hourly Wages deleted successfully.")
+            return redirect('hourly_wages_actions')
+        else:
+            messages.error(request, "There was an error deleting the Hourly Wages.")
+            return redirect('hourly_wages_actions')
+    
