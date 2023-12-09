@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attraction Actions</title>
+    <style>
+        /* Add your CSS styles here */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Animal Management</h1>
+            <button onclick="location.href='{% url 'add_animal' %}'">Add New Animal</button>
+        </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Animal Number</th>
+                <th>Species Name</th>
+                <th>Species Type</th>
+                <th>Enclosure Number</th>
+                <th>Status</th>
+                <th>Birth Year</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for animal in animals %}
+            <tr>
+                <td>{{ animal.tag_number }}</td> 
+                <td>{{ animal.species_name }}</td> 
+                <td>{{ animal.species_type }}</td>
+                <td>{{ animal.enclosure_number }}</td> 
+                <td>{{ animal.status }}</td>
+                <td>{{ animal.birth_year }}</td>
+                <td>
+                    <form action="{% url 'delete_animal' animal.tag_number %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" onclick="return confirm('Are you sure you want to delete {{ animal.species_name }}?');">Delete</button>
+                    </form>
+                    <form action="{% url 'edit_animal' animal.tag_number %}" method="get">
+                        {% csrf_token %}
+                        <input type="hidden" name="animal.tag_number" value="{{ animal.tag_number }}">
+                        <button type="submit">Edit</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    
+</body>
+</html>
+{% endblock %}

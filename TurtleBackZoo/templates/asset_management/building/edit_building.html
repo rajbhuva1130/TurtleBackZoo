@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Edit Building
+{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<div class="container">
+{% for building in buildings %}
+    <h1>Update Building: {{building_old_name}}</h1> 
+    <form action="{% url 'edit_building' building_old_name %}" method="post">
+        {% csrf_token %}
+        <label for="building_name">Building Name:</label>
+        <input type="text" id="building_name" name="building_name" value="{{ building.name }}" required>
+        
+        <label for="purpose">Purpose:</label>
+        <input type="text" id="purpose" name="purpose" value="{{ building.purpose }}" required>
+        
+        <label for="floors">Floors:</label>
+        <input type="number" id="floors" name="floors" value="{{ building.floors }}" required>
+        <input type="submit" value="Update">
+    </form>
+
+    <a href="{% url 'building_actions' %}" class="button">Back</a>
+   
+{% endfor %}
+    
+</div>
+{% endblock %}

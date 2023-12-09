@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Edit Attraction
+{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<div class="container">
+{% for attraction in attractions %}
+    <h1>Update Attraction: {{attraction.attraction_name}}</h1> 
+    <form action="{% url 'edit_attraction' attraction.attraction_name %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="current_attraction_name" value="{{ attraction.attraction_name }}">
+
+        <label for="attraction_name">Attraction Name:</label> 
+        <input type="text" id="attraction_name" name="attraction_name" value="{{ attraction.attraction_name }}" required> 
+
+        <label for="seats">Seats:</label> 
+        <input type="number" id="seats" name="seats" value="{{ attraction.seats }}" required> 
+
+        <label for="building">Building:</label> 
+        <input type="hidden" name="current_building_id" value="{{ attraction.building_id }}"> 
+        <select id="building" name="building_id" required>
+            {% for building in buildings %}
+                <option value="{{ building.building_id }}" {% if building.building_id == attraction.building_id %}selected{% endif %}>
+                    {{ building.building_name }}
+                </option>
+            {% endfor %}
+        </select> 
+        
+
+        {% for requirement in requirements %}
+        
+            <label for="species">Species:</label> 
+            <input type="hidden" name="current_species_id" value="{{ requirement.species_id }}"> 
+            <select name="species_id" id="species">
+                <option value="">Select Species</option>
+                {% for specie in species %}
+                    <option value="{{ specie.species_id }}" {% if specie.species_id == requirement.species_id %}selected{% endif %}>
+                        {{ specie.species_name }}
+                    </option>
+                {% endfor %}
+            </select> 
+
+            <label for="quantity">Quantity:</label> 
+            <input type="number" id="quantity" name="quantity" value="{{ requirement.quantity }}" required> 
+        
+        {% endfor %}
+
+        <input type="submit" value="Update">
+    </form>
+
+    <a href="{% url 'attraction_actions' %}" class="button">Back</a>
+</div>
+{% endfor %}
+{% endblock %}

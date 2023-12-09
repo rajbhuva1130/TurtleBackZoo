@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Employee Type{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<div class="container">
+    {% for employee_type in employee_types %}
+    <h1>Edit Employee Type: {{ employee_type.employee_type }}</h1>
+    
+    <form action="{% url 'edit_hourly_wages' employee_type.employee_type_id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="current_employee_type" value="{{ employee_type.employee_type }}">
+        
+        <label for="employee_type">Employee Type:</label>
+        <input type="text" id="employee_type" name="employee_type" class="form-control" value="{{ employee_type.employee_type }}" required>
+    
+        <label for="rate">Hourly Rate:</label>
+        <input type="number" id="rate" name="rate" class="form-control" step="0.01" value="{{ employee_type.rate }}" required>
+        
+        <input type="hidden" name="employee_type_id" value="{{ employee_type.employee_type_id }}">
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+    {% endfor %}
+</div>
+{% endblock %}

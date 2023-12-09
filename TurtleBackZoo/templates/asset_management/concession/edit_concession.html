@@ -1,0 +1,31 @@
+
+{% extends "base.html" %}
+
+{% block title %}Edit Concession{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<div class="container">
+    {% for concession in concessions %}
+    <h1>Edit Concession: {{ concession.concession_name }}</h1>
+    
+    <form action="{% url 'edit_concession' concession.concession_name %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="current_concession_name" value="{{ concession.concession_name }}">
+        
+        <label for="concession_name">Concession Name:</label>
+        <input type="text" id="concession_name" name="concession_name" class="form-control" value="{{ concession.concession_name }}" required>
+        
+        <input type="hidden" name="concession_id" value="{{ concession.concession_id }}">
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+    {% endfor %}
+</div>
+{% endblock %}

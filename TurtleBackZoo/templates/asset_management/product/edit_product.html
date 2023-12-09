@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Product{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<div class="container">
+    {% for product in products %}
+    <h1>Edit Product: {{ product.product_name }}</h1>
+    
+    <form action="{% url 'edit_product' product.product_id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="current_product_id" value="{{ product.product_id }}">
+        
+        <label for="product_name">Product Name:</label>
+        <input type="text" id="product_name" name="product_name" class="form-control" value="{{ product.product_name }}" required>
+    
+        <label for="price">Price:</label>
+        <input type="number" step="0.01" id="price" name="price" class="form-control" value="{{ product.price }}" required>
+    
+        <label for="concession_id">Concession:</label>
+        <select id="concession_id" name="concession_id" class="form-control" required>
+            <option value="">Select Concession</option>
+            {% for concession in concessions %}
+                <option value="{{ concession.concession_id }}" {% if concession.concession_id == product.concession_id %} selected {% endif %}>
+                    {{ concession.concession_name }}
+                </option>
+            {% endfor %}
+        </select>
+        
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+    {% endfor %}
+</div>
+{% endblock %}

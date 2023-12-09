@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Info of Species
+{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<div class="container">
+{% for species in species %}
+    <h1>Info of Species: {{ species.species_name }}</h1>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Species Name</td>
+                    <td>{{ species.species_name }}</td>
+                </tr>
+                <tr>
+                    <td>Habitat</td>
+                    <td>{{ species.habitat }}</td>
+                </tr>
+                <tr>
+                    <td>Diet</td>
+                    <td>{{ species.diet }}</td>
+                </tr>
+                <tr>
+                    <td>Monthly Food Cost</td>
+                    <td>{{ species.monthly_food_cost }}</td>
+                </tr>
+                <tr>
+                    <td>Species Type</td>
+                    <td>{{ species.species_type }}</td>
+                </tr>
+                <!-- Additional information based on species type -->
+                {% if species.species_type == 'Bird' %}
+                <tr>
+                    <td>Feather Type</td>
+                    <td>{{ species.feather_type }}</td>
+                </tr>
+                <tr>
+                    <td>Nesting Behaviour</td>
+                    <td>{{ species.nesting_behaviour }}</td>
+                </tr>
+                <tr>
+                    <td>Migratory</td>
+                    <td>{{ species.migratory }}</td>
+                </tr>
+            {% elif species.species_type == 'Mammal' %}
+                <tr>
+                    <td>Fur Type</td>
+                    <td>{{ species.fur_type }}</td>
+                </tr>
+                <tr>
+                    <td>Gestation Period</td>
+                    <td>{{ species.gestation_period }}</td>
+                </tr>
+            {% elif species.species_type == 'Reptile' %}
+                <tr>
+                    <td>Scale Type</td>
+                    <td>{{ species.scale_type }}</td>
+                </tr>
+                <tr>
+                    <td>Temperature Range</td>
+                    <td>{{ species.temperature_range }}</td>
+                </tr>
+                <tr>
+                    <td>Venomous</td>
+                    <td>{{ species.venomous }}</td>
+                </tr>
+            {% elif species.species_type == 'Aquatic' %}
+                <tr>
+                    <td>Finned Type</td>
+                    <td>{{ species.finned_type }}</td>
+                </tr>
+                <tr>
+                    <td>Average Length</td>
+                    <td>{{ species.average_length }}</td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+        <a href="{% url 'species_actions' %}" class="button">Back</a>
+    </div>
+{% endfor %} 
+</div>  
+{% endblock %}

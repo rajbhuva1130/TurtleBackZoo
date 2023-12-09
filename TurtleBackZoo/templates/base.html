@@ -1,0 +1,120 @@
+<html>
+<head>
+    <title>Turtleback Zoo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(45deg, #ff9900, #9900cc);
+            background-size: 200% 200%;
+            animation: gradientAnimation 5s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        nav {
+            background-color: #666;
+            padding: 0.5em;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 1em;
+            margin: 0 1em;
+        }
+
+       
+        .container {
+            margin: 50px 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f4f4f4;
+            overflow: scroll;
+        }
+
+        .container.home {
+            width: 300px;
+            margin: 100px auto;
+        }
+
+        .container.form {
+            width: 400px;
+            margin: 50px auto;
+        }
+
+        .container h2 {
+            margin: 0;
+        }
+
+        form, form #additionalFields  {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        form input, form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: -8px;
+            margin-bottom: 10px;
+        }
+
+        form input[type=submit] {
+            width: max-content;
+        }
+
+        .form-group {
+            margin: 15px 0;
+        }
+
+        .form-group label {
+            display: block;
+            text-align: left;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-group button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'asset_management' %}">Asset Management</a>
+        <a href="{% url 'daily_zoo_activity' %}">Daily Zoo Activity</a>
+        <a href="{% url 'management_and_reporting' %}">Reports</a>
+        
+
+    </nav>
+    {%block content%}
+
+    {% endblock %}
+    
+</body>
+</html>

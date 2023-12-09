@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Show{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<div class="container">
+    {% for show in shows %}
+    <h1>Edit Show: </h1>
+    <h2 for="attraction_id">Attraction: {{show.attraction_name}} AT {{ show.date }} {{ show.time }}</h2>
+    
+    <form action="{% url 'edit_show' show.show_id %}" method="post">
+        {% csrf_token %}
+        
+       
+        <label for="tickets_sold">Tickets Sold:</label>
+        <input type="number" id="tickets_sold" name="tickets_sold" class="form-control" value="{{ show.tickets_sold }}" required>
+    
+        <label for="status">Status:</label>
+        <select id="status" name="status" class="form-control" required>
+            <option value="Open" {% if show.status == 'Open' %} selected {% endif %}>Open</option>
+            <option value="Close" {% if show.status == 'Close' %} selected {% endif %}>Close</option>
+        </select>
+    
+        <label for="date">   Date:   </label>
+        <input type="date" id="date" name="date" class="form-control" value="{{ show.date|date:'Y-m-d' }}" required>
+    
+        <label for="time">Time:</label>
+        <input type="time" id="time" name="time" class="form-control" value="{{ show.time|date:'H:i' }}" required>
+
+        <label for="revenue">Revenue:</label>
+        <input type="text" id="revenue" name="revenue" class="form-control" value="{{ show.revenue }}" required>
+        
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+    {% endfor %}
+</div>
+{% endblock %}

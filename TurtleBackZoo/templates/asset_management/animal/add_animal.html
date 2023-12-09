@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Add New Animal</h1>
+    <form action="{% url 'add_animal' %}" method="post">
+        {% csrf_token %}
+        
+        <label for="species_id">Species:</label>
+        <select id="species_id" name="species_id" required>
+            <option value="">Select Species</option>
+            {% for species in species %}
+                <option value="{{ species.species_id }}">{{ species.species_name }}</option>
+            {% endfor %}
+        </select> 
+
+        <label for="enclosure_id">Enclosure:</label>
+        <select id="enclosure_id" name="enclosure_id" required>
+            <option value="">Select Enclosure</option>
+            {% for enclosure in enclosures %}
+                <option value="{{ enclosure.enclosure_id }}">{{ enclosure.enclosure_number }}</option>
+            {% endfor %}
+        </select> 
+        
+        <label for="status">Status:</label>
+        <input type="text" id="status" name="status" required> 
+
+        <label for="birth_year">Birth Year:</label>
+        <input type="number" id="birth_year" name="birth_year" required> 
+
+        
+
+        <input type="submit" value="Add Animal">
+    </form>
+</div>
+{% endblock %}

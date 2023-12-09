@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Add Employee
+{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<div class="container">
+    <h1>Add Employee</h1>
+    <form action="{% url 'add_employee' %}" method="post">
+        {% csrf_token %}
+        
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" name="first_name" required>
+        
+        <label for="middle_name">Middle Name:</label>
+        <input type="text" id="middle_name" name="middle_name">
+        
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" name="last_name" required>
+        
+        <label for="street">Street:</label>
+        <input type="text" id="street" name="street" required>
+        
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" required>
+        
+        <label for="state">State:</label>
+        <input type="text" id="state" name="state" required>
+        
+        <label for="country">Country:</label>
+        <input type="text" id="country" name="country" required>
+        
+        <label for="zipcode">Zipcode:</label>
+        <input type="text" id="zipcode" name="zipcode" required>
+        
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" required>
+        
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        
+        <label for="phone">Phone:</label>
+        <input type="tel" id="phone" name="phone" required>
+        
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="Supervisor">Supervisor:</label>
+        <select id="supervisor_id" name="supervisor_id" required>
+            <option value="">Select Supervisor</option>
+            {% for supervisor in supervisors %}
+                <option value="{{ supervisor.supervisor_id  }}">{{ supervisor.supervisor_name }}</option>
+            {% endfor %}
+        </select>
+
+        <input id="employee_type" name="employee_type" type="hidden" />
+        
+        <label for="employee_type">Employee Type:</label>
+        <select id="employee_type_id" name="employee_type_id" required onchange="toggleEmployeeSections()">
+            <option value="">Select Employee Type</option>
+            {% for employee in employee_types %}
+                <option value="{{ employee.employee_type_id }}">{{ employee.employee_type }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Ticket Sellers Section -->
+        <div id="Ticket Sellers" class="employee-section">
+            <label for="shift">Shift:</label>
+            <input type="text" id="shift" name="shift">
+        </div>
+    
+        <!-- Customer Service Section -->
+        <div id="Customer Service" class="employee-section">
+            <label for="concession">Concessions name:</label>
+            <select id="concession_name" name="concession_name">
+                <option value="">Select Concession</option>
+                {% for concession in concessions %}
+                    <option value="{{ concession.concession_id }}">{{ concession.concession_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    
+        <!-- Maintenance Section -->
+        <div id="Maintenance" class="employee-section">
+            <label for="specialization">Specialization:</label>
+            <select id="specialization" name="specialization">
+                <option value="">Select Specialization</option>
+                {% for specialization in specializations %}
+                    <option value="{{ specialization.specialization }}">{{ specialization.specialization }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    
+        <!-- Veterinarians Section -->
+        <div id="Veterinarians" class="employee-section">
+            <label for="license_number">License Number:</label>
+            <input type="text" id="license_number" name="license_number">
+            <label for="degree">Degree:</label>
+            <input type="text" id="degree" name="degree">
+            <label for="specie_name">Species Name:</label>
+            <select id="species_id" name="species_id" required>  
+                {% for species in species %}
+                    <option value="{{ species.species_id }}">
+                        {{ species.species_name }}
+                    </option>
+                {% endfor %}
+            </select>
+
+        </div>
+    
+        <!-- Animal Care Section -->
+        <div id="Animal Care" class="employee-section">
+            <label for="experience">Experience:</label>
+            <input type="text" id="experience" name="experience">
+            <label for="species_name">Species Name:</label>
+            <select id="species_id" name="species_id" required>  
+                {% for species in species %}
+                    <option value="{{ species.species_id }}">
+                        {{ species.species_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        
+        <input type="submit" value="Add Employee">
+    </form>
+    <a href="{% url 'employee_actions' %}" class="button">Back</a>
+</div>
+
+    <script>
+        function toggleEmployeeSections() {
+            // var selectedEmployeeTypeId = document.getElementById("employee_type_id").value;
+            // console.log('Selected Type ID:', selectedEmployeeTypeId); // Debugging log
+            var selectElement = document.getElementById("employee_type_id");
+            var selectedId = selectElement.value;
+            var selectedType = selectElement.options[selectElement.selectedIndex].text;
+            
+            document.getElementById("employee_type").value = selectedType;
+            
+            var sections = document.querySelectorAll('.employee-section');
+            sections.forEach(function (section) {
+                section.style.display = 'none';
+            });
+    
+            var selectedSection = document.getElementById(selectedType);
+            console.log('Selected Section:', selectedSection); // Debugging log
+    
+            if (selectedSection) {
+                selectedSection.style.display = 'block';
+            }
+        }
+    
+        document.getElementById("employee_type_id").addEventListener("change", toggleEmployeeSections);
+        window.onload = toggleEmployeeSections;
+    </script>
+
+{% endblock %}
+

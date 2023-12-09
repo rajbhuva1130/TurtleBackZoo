@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Species{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<div class="container">
+    {% for species in species %}
+    <h1>Edit Species: </h1>
+    <h2>Species Name: {{ species.species_name }}</h2>
+    
+    <form action="{% url 'edit_species' species.species_id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" id="current_species_type" name="current_species_type" class="form-control" value="{{ species.species_type }}">
+        
+        <label for="species_name">Species Name:</label>
+        <input type="text" id="species_name" name="species_name" class="form-control" value="{{ species.species_name }}" required>
+    
+        <label for="habitat">Habitat:</label>
+        <input type="text" id="habitat" name="habitat" class="form-control" value="{{ species.habitat }}">
+    
+        <label for="diet">Diet:</label>
+        <input type="text" id="diet" name="diet" class="form-control" value="{{ species.diet }}">
+    
+        <label for="monthly_food_cost">Monthly Food Cost:</label>
+        <input type="number" step="0.01" id="monthly_food_cost" name="monthly_food_cost" class="form-control" value="{{ species.monthly_food_cost }}" required>
+    
+        <label for="species_type">Species Type:</label>
+        <select id="species_type" name="species_type" class="form-control" onchange="updateSpeciesTypeFields()" required>
+            <option data-type="Bird" value="Bird" {% if species.species_type == 'Bird' %} selected {% endif %}>Bird</option>
+            <option data-type="Mammal" value="Mammal" {% if species.species_type == 'Mammal' %} selected {% endif %}>Mammal</option>
+            <option data-type="Reptile" value="Reptile" {% if species.species_type == 'Reptile' %} selected {% endif %}>Reptile</option>
+            <option data-type="Aquatic" value="Aquatic" {% if species.species_type == 'Aquatic' %} selected {% endif %}>Aquatic</option>
+            
+        </select>
+    
+
+        <!-- Additional Fields div -->
+        <div id="additionalFields" >
+        </div>
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+    {% endfor %}
+</div>
+<script>
+    
+    function updateSpeciesTypeFields(species) {
+        const speciesSelect = document.getElementById('species_type');
+        const fieldsDiv = document.getElementById('additionalFields');
+        const selectedType = speciesSelect.options[speciesSelect.selectedIndex].getAttribute('data-type');
+    
+        fieldsDiv.innerHTML = ''; // Clear existing fields
+    
+        if (selectedType === 'Bird') {
+            fieldsDiv.innerHTML += `<label for="feather_type">Feather Type:</label><input type="text" id="feather_type" name="feather_type" value="${species.feather_type || ''}"> `;
+            fieldsDiv.innerHTML += `<label for="nesting_behaviour">Nesting Behaviour:</label><input type="text" id="nesting_behaviour" name="nesting_behaviour" value="${species.nesting_behaviour || ''}"> `;
+            fieldsDiv.innerHTML += `<label for="migratory">Migratory:</label><input type="checkbox" id="migratory" name="migratory" ${species.migratory ? 'checked' : ''}> `;
+        } else if (selectedType === 'Mammal') {
+            fieldsDiv.innerHTML += `<label for="fur_type">Fur Type:</label><input type="text" id="fur_type" name="fur_type" value="${species.fur_type || ''}"> `;
+            fieldsDiv.innerHTML += `<label for="gestation_period">Gestation Period:</label><input type="number" step="0.01" id="gestation_period" name="gestation_period" value="${species.gestation_period || ''}"> `;
+        } else if (selectedType === 'Reptile') {
+            fieldsDiv.innerHTML += `<label for="scale_type">Scale Type:</label><input type="text" id="scale_type" name="scale_type" value="${species.scale_type || ''}"> `;
+            fieldsDiv.innerHTML += `<label for="temperature_range">Temperature Range:</label><input type="text" id="temperature_range" name="temperature_range" value="${species.temperature_range || ''}"> `;
+            fieldsDiv.innerHTML += `<label for="venomous">Venomous:</label><input type="checkbox" id="venomous" name="venomous" ${species.venomous ? 'checked' : ''}> `;
+        } else if (selectedType === 'Aquatic') {
+            fieldsDiv.innerHTML += `<label for="finned_type">Finned Type:</label><input type="text" id="finned_type" name="finned_type" value="${species.finned_type || ''}"> `;
+            fieldsDiv.innerHTML += `<label for="average_length">Average Length:</label><input type="number" id="average_length" name="average_length" value="${species.average_length || ''}"> `;
+        }
+        // Add any other species types as needed.
+    }
+    
+    // Define the currentSpeciesData object with the actual values for the species.
+    // This should be populated with data provided by your server-side code.
+    const currentSpeciesData = {
+        
+    };
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        updateSpeciesTypeFields(currentSpeciesData);
+    
+        // Also update fields when the species type is changed.
+        document.getElementById('species_type').addEventListener('change', function() {
+            updateSpeciesTypeFields(currentSpeciesData);
+        });
+    });
+    
+</script>
+{% endblock %}
