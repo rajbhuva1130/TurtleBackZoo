@@ -12,7 +12,7 @@
             {% for species in species %}
                 <option value="{{ species.species_id }}">{{ species.species_name }}</option>
             {% endfor %}
-        </select><br>
+        </select> 
 
         <label for="enclosure_id">Enclosure:</label>
         <select id="enclosure_id" name="enclosure_id" required>
@@ -20,13 +20,13 @@
             {% for enclosure in enclosures %}
                 <option value="{{ enclosure.enclosure_id }}">{{ enclosure.enclosure_number }}</option>
             {% endfor %}
-        </select><br>
+        </select> 
         
         <label for="status">Status:</label>
-        <input type="text" id="status" name="status" required><br>
+        <input type="text" id="status" name="status" required> 
 
         <label for="birth_year">Birth Year:</label>
-        <input type="number" id="birth_year" name="birth_year" required><br>
+        <input type="number" id="birth_year" name="birth_year" required> 
 
         
 

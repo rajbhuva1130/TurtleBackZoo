@@ -18,25 +18,22 @@
     <form action="{% url 'edit_enclosure' enclosure.enclosure_id %}" method="post">
         {% csrf_token %}
         <input type="hidden" name="current_enclosure_number" value="{{ enclosure.enclosure_number }}">
-        <div class="form-group">
-            <label for="enclosure_number">Enclosure Number:</label>
-            <input type="text" id="enclosure_number" name="enclosure_number" class="form-control" value="{{ enclosure.enclosure_number }}" required>
-        </div>
-        <div class="form-group">
-            <label for="square_foot">Square Foot:</label>
-            <input type="number" id="square_foot" name="square_foot" class="form-control" value="{{ enclosure.square_foot }}" required>
-        </div>
-        <div class="form-group">
-            <label for="building_id">Building:</label>
-            <select id="building_id" name="building_id" class="form-control" required>
-                {% for building in buildings %}
-                <option value="">Select Building</option>
-                    <option value="{{ building.building_id }}" {% if building.building_id == enclosure.building_id %} selected {% endif %}>
-                        {{ building.building_name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
+    
+        <label for="enclosure_number">Enclosure Number:</label>
+        <input type="text" id="enclosure_number" name="enclosure_number" class="form-control" value="{{ enclosure.enclosure_number }}" required>
+    
+        <label for="square_foot">Square Foot:</label>
+        <input type="number" id="square_foot" name="square_foot" class="form-control" value="{{ enclosure.square_foot }}" required>
+    
+        <label for="building_id">Building:</label>
+        <select id="building_id" name="building_id" class="form-control" required>
+            {% for building in buildings %}
+                <option value="{{ building.building_id }}" {% if building.building_id == enclosure.building_id %} selected {% endif %}>
+                    {{ building.building_name }}
+                </option>
+            {% endfor %}
+        </select>
+        
         <button type="submit" class="btn btn-primary">Update</button>
     </form>
     {% endfor %}

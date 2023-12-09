@@ -35,8 +35,10 @@
 </head>
 <body>
     <div class="container">
-        <h1>Product Management</h1>
-        <button onclick="location.href='{% url 'add_product' %}'">Add New Product</button>
+        <div class="header">
+            <h1>Product Management</h1>
+            <button onclick="location.href='{% url 'add_product' %}'">Add New Product</button>
+        </div>
         <table>
             <thead>
                 <tr>

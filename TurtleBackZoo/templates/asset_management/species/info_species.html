@@ -13,6 +13,7 @@
 {% endif %}
 
 {% block content %}
+<div class="container">
 {% for species in species %}
     <h1>Info of Species: {{ species.species_name }}</h1>
     <div class="container">
@@ -94,5 +95,6 @@
         </table>
         <a href="{% url 'species_actions' %}" class="button">Back</a>
     </div>
-{% endfor %}   
+{% endfor %} 
+</div>  
 {% endblock %}

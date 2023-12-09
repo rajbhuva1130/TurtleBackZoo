@@ -19,10 +19,10 @@
     <form action="{% url 'edit_concession' concession.concession_name %}" method="post">
         {% csrf_token %}
         <input type="hidden" name="current_concession_name" value="{{ concession.concession_name }}">
-        <div class="form-group">
-            <label for="concession_name">Concession Name:</label>
-            <input type="text" id="concession_name" name="concession_name" class="form-control" value="{{ concession.concession_name }}" required>
-        </div>
+        
+        <label for="concession_name">Concession Name:</label>
+        <input type="text" id="concession_name" name="concession_name" class="form-control" value="{{ concession.concession_name }}" required>
+        
         <input type="hidden" name="concession_id" value="{{ concession.concession_id }}">
         <button type="submit" class="btn btn-primary">Update</button>
     </form>

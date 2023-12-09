@@ -11,6 +11,7 @@
     </ul>
 {% endif %}
 {% block content %}
+<div class="container">
     <h1>Add Building</h1>
     <form action="{% url 'add_building' %}" method="post">
         {% csrf_token %}
@@ -26,4 +27,5 @@
         <input type="submit" value="Add Building">
     </form>
     <a href="{% url 'building_actions' %}" class="button">Back</a>
+</div>
 {% endblock %}

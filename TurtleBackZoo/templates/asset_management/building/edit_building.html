@@ -13,7 +13,7 @@
 {% endif %}
 
 {% block content %}
-
+<div class="container">
 {% for building in buildings %}
     <h1>Update Building: {{building_old_name}}</h1> 
     <form action="{% url 'edit_building' building_old_name %}" method="post">
@@ -33,5 +33,5 @@
    
 {% endfor %}
     
-
+</div>
 {% endblock %}

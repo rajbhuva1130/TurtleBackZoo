@@ -36,16 +36,45 @@
 
        
         .container {
-            margin: 100px auto;
-            width: 300px;
+            margin: 50px 30px;
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 4px;
             background-color: #f4f4f4;
+            overflow: scroll;
+        }
+
+        .container.home {
+            width: 300px;
+            margin: 100px auto;
+        }
+
+        .container.form {
+            width: 400px;
+            margin: 50px auto;
         }
 
         .container h2 {
             margin: 0;
+        }
+
+        form, form #additionalFields  {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        form input, form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: -8px;
+            margin-bottom: 10px;
+        }
+
+        form input[type=submit] {
+            width: max-content;
         }
 
         .form-group {

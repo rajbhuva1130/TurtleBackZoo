@@ -13,6 +13,7 @@
 {% endif %}
 
 {% block content %}
+<div class="container">
     <h1>Info Employee: {{ employee.first_name }} {{ employee.last_name }}</h1>
     <div class="container">
         <table>
@@ -129,5 +130,5 @@
         </table>
         <a href="{% url 'employee_actions' %}" class="button">Back</a>
     </div>
-    
+</div>   
 {% endblock %}
