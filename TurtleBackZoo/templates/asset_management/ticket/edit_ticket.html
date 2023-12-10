@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Add Ticket{% endblock %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{% block content %}
+<div class="container">
+    {% for ticket in tickets %}
+    <h1>Add New Ticket</h1>
+    <form action="{% url 'edit_ticket' ticket.ticket_id %}" method="post">
+        {% csrf_token %}
+        
+        <label for="ticket_type">Ticket Type:</label>
+        <input type="text" id="ticket_type" name="ticket_type" class="form-control" value="{{ ticket.ticket_type }}" required>
+        
+        <label for="price">Price:</label>
+        <input type="number" id="price" name="price" class="form-control" value="{{ ticket.price }}" step="0.01" required>
+        
+        <label for="description">Description:</label>
+        <textarea id="description" name="description" class="form-control">{{ ticket.description }}</textarea>
+        
+        <div class="form-group">
+            <label for="attraction_id">Attraction:</label>
+            <select id="attraction_id" name="attraction_id" class="form-control">
+                {% for attraction in attractions %}
+                    <option value="{{ attraction.attraction_id }}" {% if attraction.attraction_id == ticket.attraction_id %}selected{% endif %}>
+                        {{ attraction.attraction_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+            
+        
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    {% endfor %}
+</div>
+{% endblock %}

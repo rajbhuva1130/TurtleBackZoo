@@ -400,10 +400,10 @@ def add_employee(request):
             elif employee_type == 'Veterinarians': 
                 license_number = request.POST.get('license_number')
                 degree = request.POST.get('degree')
-                species_id = request.POST.get('species_id')
+                specie_id = request.POST.get('specie_id')
                 query_insert_veterinarian = ''' INSERT INTO veterinarian (employee_id, license_number, degree, species_id) 
                  VALUES ((SELECT employee_id FROM employee WHERE email = %s), %s, %s, %s) '''
-                success_ = execute_query(query_insert_veterinarian, email, license_number, degree, species_id, query_type="INSERT")
+                success_ = execute_query(query_insert_veterinarian, email, license_number, degree, specie_id, query_type="INSERT")
                 
                 if not success_:
                     query_select_emp_number = "SELECT emp_number FROM employee WHERE email = %s"
@@ -1886,3 +1886,108 @@ def delete_hourly_wages(request, employee_type_id):
             messages.error(request, "There was an error deleting the Hourly Wages.")
             return redirect('hourly_wages_actions')
     
+######################################################
+#                    Ticket
+######################################################
+
+def ticket_actions(request):
+    # Assuming 'execute_query' is a utility function you've defined to run database queries
+    query = "SELECT ticket.ticket_id, attraction.attraction_name, ticket.price, ticket.ticket_type, ticket.description FROM ticket JOIN attraction ON ticket.attraction_id = attraction.attraction_id;"
+    results, success = execute_query(query, query_type='SELECT')
+
+    if not success:
+        messages.error(request, "Failed to load Ticket information.")
+        return render(request, 'error.html') 
+    
+    columns_ticket = ['ticket_id','attraction_name', 'price', 'ticket_type', 'description']
+    tickets = [dict(zip(columns_ticket, row)) for row in results]
+
+    return render(request, 'asset_management/ticket/ticket_actions.html', {'tickets': tickets})
+
+def add_ticket(request):
+    if request.method == 'GET':
+        # Fetch attraction from the database
+        query = "SELECT attraction_id, attraction_name FROM attraction;"
+        attraction, success = execute_query(query, query_type="SELECT")
+        
+        if not success:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_attractions = ['attraction_id','attraction_name']
+        attractions = [dict(zip(columns_attractions, row)) for row in attraction]
+        
+        return render(request, 'asset_management/ticket/add_ticket.html',{'attractions':attractions})
+        
+    if request.method == 'POST':
+        ticket_type = request.POST.get('ticket_type')
+        price = request.POST.get('price')
+        description = request.POST.get('description')
+        attraction_id = request.POST.get('attraction_id')  # Assuming this comes from the form
+
+        query = "INSERT INTO ticket (attraction_id, price, ticket_type, description) VALUES (%s, %s, %s, %s);"
+        success = execute_query(query, attraction_id, price, ticket_type, description, query_type="INSERT")
+
+        if success:
+            messages.success(request, "New Ticket added successfully.")
+            return redirect('ticket_actions')  # Update this to the correct redirect view
+        else:
+            messages.error(request, "There was an error adding the Ticket.")
+
+    return render(request, 'asset_management/ticket/add_ticket.html')  # Update template path if necessary
+
+def edit_ticket(request, ticket_id):
+    if request.method == 'GET':
+        # Fetch attraction from the database
+        query = "SELECT attraction_id, attraction_name FROM attraction;"
+        attraction, success = execute_query(query, query_type="SELECT")
+        
+        if not success:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+
+        columns_attractions = ['attraction_id','attraction_name']
+        attractions = [dict(zip(columns_attractions, row)) for row in attraction]
+        
+        query = '''SELECT ticket.ticket_id,attraction.attraction_id, attraction.attraction_name, ticket.price, ticket.ticket_type, ticket.description FROM ticket 
+        JOIN attraction ON ticket.attraction_id = attraction.attraction_id WHERE ticket.ticket_id = %s;'''
+        results, success = execute_query(query, ticket_id, query_type="SELECT")
+        
+        if not success:
+            messages.error(request, 'Failed to fetch ticket details!')
+            return render(request, 'error.html')
+
+        columns_ticket = ['ticket_id','attraction_id', 'attraction_name', 'price', 'ticket_type', 'description']
+        tickets= [dict(zip(columns_ticket, row)) for row in results]
+
+        return render(request, 'asset_management/ticket/edit_ticket.html', {'tickets': tickets,'attractions':attractions})
+    
+    if request.method == 'POST':
+        attraction_id = request.POST.get('attraction_id')
+        price = request.POST.get('price')
+        ticket_type = request.POST.get('ticket_type')
+        description = request.POST.get('description')
+
+        query = "UPDATE ticket SET attraction_id = %s, price = %s, ticket_type = %s, description = %s WHERE ticket_id = %s;"
+        success = execute_query(query, attraction_id, price, ticket_type, description, ticket_id, query_type="UPDATE")
+
+        if success:
+            messages.success(request, "Ticket updated successfully.")
+            return redirect('ticket_actions')  # Update this to the correct redirect view
+        else:
+            messages.error(request, "There was an error updating the Ticket.")
+
+    return render(request, 'asset_management/ticket/edit_ticket.html', {'tickets': tickets})
+
+def delete_ticket(request, ticket_id):
+    if request.method == 'POST':
+        # Perform the delete operation
+        query = "DELETE FROM ticket WHERE ticket_id = %s;"
+        success = execute_query(query, ticket_id, query_type="DELETE")
+        
+        if success:
+            messages.success(request, "Ticket deleted successfully.")
+            return redirect('ticket_actions')  # Update this to the correct redirect view
+        else:
+            messages.error(request, "There was an error deleting the Ticket.")
+            return redirect('ticket_actions')  # Update this to the correct redirect view

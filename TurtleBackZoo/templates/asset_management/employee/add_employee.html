@@ -107,7 +107,7 @@
             <label for="degree">Degree:</label>
             <input type="text" id="degree" name="degree">
             <label for="specie_name">Species Name:</label>
-            <select id="species_id" name="species_id" required>  
+            <select id="specie_id" name="specie_id" required>  
                 {% for species in species %}
                     <option value="{{ species.species_id }}">
                         {{ species.species_name }}
