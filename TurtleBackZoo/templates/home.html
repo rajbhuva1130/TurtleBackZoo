@@ -1,5 +1,14 @@
 {% extends "base.html" %}
 
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success" role="alert">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +18,8 @@
     <title>hello </title>
 </head>
 <body>
-    hello {{name}} !!!
+   <h1> hello {{name}} !!!</h1>
+    <button onclick="window.location.href='{% url 'sale_home' %}'" style="padding: 12px 24px; font-size: 18px;">Sale</button>
 </body>
 </html>
 {% endblock %}

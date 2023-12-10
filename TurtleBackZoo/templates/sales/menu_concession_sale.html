@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post" action="{% url 'process_transaction' %}">
+<h1>Concessions menu for concession id : {{ concession_id }}</h1>
+
+    {% csrf_token %}
+    <div class="container">
+    <table>
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+                <tr>
+                    <td>{{ product.product_name }}</td>
+                    <td>${{ product.price }}</td>
+                    <td><input type="number" name="product_{{ product.product_id }}_{{ product.price }}" min="0"></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <input type="hidden" id="transaction_type" name="transaction_type" value="Concession">
+    <input type="hidden" id="concession_id" name="concession_id" value="{{ concession_id }}">
+    </div>
+    <div style="text-align: center;">
+        <button type="submit">Checkout</button>
+    </div>
+</form>
+{% endblock %}
