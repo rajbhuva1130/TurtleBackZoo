@@ -71,5 +71,11 @@ urlpatterns = [
     path('hourly_wages/add_hourly_wages/', views.add_hourly_wages, name='add_hourly_wages'),
     path('hourly_wages/edit_hourly_wages/<str:employee_type_id>/', views.edit_hourly_wages, name='edit_hourly_wages'),
     path('hourly_wages/delete_hourly_wages/<str:employee_type_id>/', views.delete_hourly_wages, name='delete_hourly_wages'),
+    
+        # ticket's Links
+    path('ticket/', views.ticket_actions, name='ticket_actions'),
+    path('ticket/add_ticket/', views.add_ticket, name='add_ticket'),
+    path('ticket/edit_ticket/<str:ticket_id>/', views.edit_ticket, name='edit_ticket'),
+    path('ticket/delete_ticket/<str:ticket_id>/', views.delete_ticket, name='delete_ticket'),
 ]
 
