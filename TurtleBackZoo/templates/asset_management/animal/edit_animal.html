@@ -37,11 +37,17 @@
         </select> 
 
 
-        <label for="status">Status:</label> 
-        <input type="text" id="status" name="status" value="{{ animal.status }}" required> 
+        <label for="status">Status:</label>
+        <select id="status" name="status" required>
+            <option value="">Select Status</option>
+            <option value="Healthy" {% if animal.status == "Healthy" %} selected {% endif %}>Healthy</option>
+            <option value="Medical Care" {% if animal.status == "Medical Care" %} selected {% endif %}>Medical Care</option>
+            <option value="Maternal Leave" {% if animal.status == "Maternal Leave" %} selected {% endif %}>Maternal Leave</option>
+            <option value="Newborn" {% if animal.status == "Newborn" %} selected {% endif %}>Newborn</option>
+        </select>
 
         <label for="birth_year">Birth Year:</label> 
-        <input type="number" id="birth_year" name="birth_year" value="{{ animal.birth_year }}" required> 
+        <input type="number" id="birth_year" name="birth_year" value="{{ animal.birth_year }}"  min="1900" max="2023" required> 
 
         <input type="submit" value="Update">
     </form>
