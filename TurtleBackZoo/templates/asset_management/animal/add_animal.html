@@ -23,12 +23,16 @@
         </select> 
         
         <label for="status">Status:</label>
-        <input type="text" id="status" name="status" required> 
-
-        <label for="birth_year">Birth Year:</label>
-        <input type="number" id="birth_year" name="birth_year" required> 
-
+        <select id="status" name="status" required>
+            <option value="">Select Status</option>
+            <option value="Healthy">Healthy</option>
+            <option value="Medical Care">Medical Care</option>
+            <option value="Maternal Leave">Maternal Leave</option>
+            <option value="Newborn">Newborn</option>
+        </select>
         
+        <label for="birth_year">Birth Year:</label>
+        <input type="number" id="birth_year" name="birth_year" min="1900" max="2023" required>
 
         <input type="submit" value="Add Animal">
     </form>
