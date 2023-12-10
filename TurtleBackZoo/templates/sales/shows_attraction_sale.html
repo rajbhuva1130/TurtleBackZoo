@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}
+    
+{% endblock %}
+
+{% block content %}
+
+<form method="post" action="{% url 'process_transaction' %}">
+{% csrf_token %}  
+<div class="container">
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Select Show</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Available Tickets</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for show in show_details %}
+                <tr>
+                    <td>
+                        <input type="radio" name="selected_show" value="{{ show.show_id }}" required>
+                    </td>
+                    <td>{{ show.date }}</td>
+                    <td>{{ show.time }}</td>
+                    <td>{{ show.available_tickets }}</td>  
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Hidden input field to store the selected show ID -->
+    <input type="hidden" id="selected_show_id" name="selected_show_id" value="">
+    <input type="hidden" id="transaction_type" name="transaction_type" value="Attraction">
+</div>
+
+<div class="container">
+    <table>
+        <thead>
+            <tr>
+                <th>Ticket</th>
+                <th>Price</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ticket in tickets %}
+                <tr>
+                    <td>{{ ticket.ticket_type }}</td>
+                    <td>${{ ticket.price }}</td>
+                    <td>
+                        <input type="number" id="{{ ticket.ticket_id }}" name="ticket_{{ ticket.ticket_id }}_{{ ticket.price }}" min="0" required>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h1></h1>
+    
+</div>
+<div style="text-align: center;">
+    <button type="submit">Checkout</button>
+</div>
+</form>
+<script>
+    // JavaScript to handle capturing the selected show ID
+    document.addEventListener('DOMContentLoaded', function() {
+        const radioButtons = document.querySelectorAll('input[type="radio"]');
+        radioButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                document.getElementById('selected_show_id').value = this.value;
+            });
+        });
+    });
+</script>
+    <!-- Additional content or formatting as needed -->
+{% endblock %}

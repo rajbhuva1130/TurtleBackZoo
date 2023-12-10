@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}
+    Concessions Sale
+{% endblock %}
+
+{% block content %}
+    <h1>Concessions Sale</h1>
+    <form method="post" action="{% url 'menu_concession_sale' %}">
+        {% csrf_token %}
+        {% for concession in concessions %}
+            <button type="submit" name="concession_id" value="{{ concession.concession_id }}" style="padding: 12px 24px; font-size: 18px;">{{ concession.concession_name }}</button>
+            
+            <br><br>
+        {% endfor %}
+    </form>
+{% endblock %}

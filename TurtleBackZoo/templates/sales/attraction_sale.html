@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Attractions Sale
+{% endblock %}
+
+{% block content %}
+    <h1>Attractions Sale</h1>
+    <form method="post" action="{% url 'shows_attraction_sale' %}">
+        {% csrf_token %}
+        {% for attraction in attractions %}
+            <button type="submit" name="attraction_id" value="{{ attraction.attraction_id }}" style="padding: 12px 24px; font-size: 18px;">{{ attraction.attraction_name }}</button>
+            <input type="hidden" name="seats" value="{{ attraction.seats }}">
+            <br><br>
+        {% endfor %}
+    </form>
+{% endblock %}

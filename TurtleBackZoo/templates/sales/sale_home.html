@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Sale Home
+{% endblock %}
+
+{% block content %}
+    <h1>Sale Home</h1>
+    <button onclick="window.location.href='{% url 'attraction_sale' %}'" style="padding: 12px 24px; font-size: 18px;">Attraction</button>
+    <button onclick="window.location.href='{% url 'concession_sale' %}'" style="padding: 12px 24px; font-size: 18px;">Concession</button>
+{% endblock %}
