@@ -77,27 +77,6 @@ def shows_attraction_sale(request):
     else:
         return render(request, 'error.html')
 
-# def process_transaction(request):
-#      if request.method == 'POST':
-#         selected_show_id = request.POST.get('selected_show')  # Get selected show ID
-#         # Retrieve ticket details from the 'tickets' field
-#         tickets = {}
-#         for key, value in request.POST.items():
-#             if key.startswith('tickets'):
-#                 ticket_id = request.POST.get(f'{key}[ticket_id]')
-#                 quantity = request.POST.get(f'{key}[quantity]')
-#                 tickets[ticket_id] = quantity
-
-#         # Process the retrieved data as needed
-#         # Example: Print the data for demonstration purposes
-#         print(f"Selected Show ID: {selected_show_id}")
-#         print("Tickets:")
-#         for ticket_id, quantity in tickets.items():
-#             print(f"Ticket ID: {ticket_id}, Quantity: {quantity}")
-#         return HttpResponse("Transaction processed successfully!")
-#      else:
-#         return render(request, 'error.html')  # Handle error cases if required
-
 def process_transaction(request):
     if request.method == 'POST':    
         transaction_type = request.POST.get('transaction_type')
@@ -137,8 +116,9 @@ def process_transaction(request):
                             # Insert transaction details for the concession product
                             query_insert_transaction_concession = "INSERT INTO transaction_concession (transaction_id, concession_id, product_id) VALUES (%s, %s, %s) RETURNING transaction_id"
                             success = execute_query(query_insert_transaction_concession, transaction_id, concession_id, product_id, query_type="INSERT")
-
-        return HttpResponse("Transaction processed successfully!")
+        
+        return render(request,'home.html')
+        # return HttpResponse("Transaction processed successfully!")
     
     return HttpResponse("Invalid request or processing failed.")
 

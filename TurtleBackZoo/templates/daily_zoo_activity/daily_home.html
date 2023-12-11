@@ -23,30 +23,33 @@
         </form>
 
         <!-- Displaying Transactions (if available) -->
-        {% if daily_zoo %}
-            <h2>Transactions for Attration</h2>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Show Name</th>
-                        <th>Timestamp</th>
-                        <th>Unit Price</th>
-                        <th>Count</th>
-                        <th>Transaction Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for transaction in daily_zoo %}
+        {% if daily_zoo or daily_zoo_con %}
+            {% if daily_zoo %}
+                <h2>Transactions for Attration</h2>
+                <table class="table">
+                    <thead>
                         <tr>
-                            <td>{{ transaction.show_name }}</td>
-                            <td>{{ transaction.time_stamp }}</td>
-                            <td>{{ transaction.unit_price }}</td>
-                            <td>{{ transaction.ncount }}</td>
-                            <td>{{ transaction.total_cost }}</td>
+                            <th>Show Name</th>
+                            <th>Timestamp</th>
+                            <th>Unit Price</th>
+                            <th>Count</th>
+                            <th>Transaction Total</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for transaction in daily_zoo %}
+                            <tr>
+                                <td>{{ transaction.show_name }}</td>
+                                <td>{{ transaction.time_stamp }}</td>
+                                <td>{{ transaction.unit_price }}</td>
+                                <td>{{ transaction.ncount }}</td>
+                                <td>{{ transaction.total_cost }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+            {% if daily_zoo_con%}
             <h2>Transactions for Concession</h2>
             <table class="table">
                 <thead>
@@ -72,6 +75,7 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% endif %}
         {% else %}
             <p>No transactions available for this date.</p>
         {% endif %}
