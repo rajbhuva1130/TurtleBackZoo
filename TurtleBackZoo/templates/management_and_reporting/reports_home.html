@@ -1,15 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>hello </title>
+    <title>Asset Page</title>
 </head>
 <body>
-    reportshome {{name}} !!!
+    <div class="container home">
+            <h1>Reports</h1>
+            
+            <ul>
+                <li><a href="{% url 'animal_reports' %}">Animal population by species</a></li>
+                <li><a href="{% url 'top_three_attractions' %}">Top three attractions</a></li>
+                <li><a href="{% url 'five_best_days' %}">5 best days</a></li>
+                <li><a href="{% url 'average_revenue' %}">Average revenue</a></li>
+                <li><a href="{% url 'revenue_by_source' %}">Revenue by source</a></li>
+            </ul>
+    </div>
 </body>
 </html>
+
 {% endblock %}

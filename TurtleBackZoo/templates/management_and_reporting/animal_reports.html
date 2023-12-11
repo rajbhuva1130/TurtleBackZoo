@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Animal Population Report</title> 
+</head>
+<body>
+    <div class="container">
+        <h1>Animal population by Species</h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Species Name</th>
+                    <th>Healthy</th>
+                    <th>Medical Care</th>
+                    <th>Maternal Leave</th>
+                    <th>Newborn</th>
+                    <th>Monthly Food Cost per Animal</th>
+                    <th>Total Monthly Food Cost</th>
+                    <th>Number of Vets</th>
+                    <th>Total Vet Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for specie in species %}
+                <tr>
+                    <td>{{ specie.species_name }}</td>
+                    <td>{{ specie.number_healthy }}</td>
+                    <td>{{ specie.number_medical_care }}</td>
+                    <td>{{ specie.maternal_leave }}</td>
+                    <td>{{ specie.number_newborn }}</td>
+                    <td>{{ specie.monthly_cost }}</td>
+                    <td>{{ specie.total_monthly_food_cost }}</td>
+                    <td>{{ specie.number_of_vets }}</td>
+                    <td>{{ specie.total_vet_cost }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+{% endblock %}
