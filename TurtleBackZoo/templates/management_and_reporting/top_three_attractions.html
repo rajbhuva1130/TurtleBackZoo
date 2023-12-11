@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Date Range</title>
+    
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Select Date Range</h1>
+        
+        <form action="{% url 'top_three_attractions' %}" method="post">
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col">
+                    <label for="start_date">Start Date:</label>
+                    <input type="date" id="start_date" name="start_date" class="form-control" required>
+                </div>
+                <div class="col">
+                    <label for="end_date">End Date:</label>
+                    <input type="date" id="end_date" name="end_date" class="form-control" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Show Top Attractions</button>
+        </form>
+        
+        <!-- Optional: Display the results if available -->
+        {% if top_three_attractions %}
+            <h2 class="mt-5 text-center">Top Three Attractions</h2>
+            <table class="table table-hover mt-4">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Attraction Name</th>
+                        <th scope="col">Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attraction in top_three_attractions %}
+                        <tr>
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ attraction.attraction_name }}</td>
+                            <td>${{ attraction.total_revenue | floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</body>
+</html>
+{% endblock %}

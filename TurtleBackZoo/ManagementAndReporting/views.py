@@ -1,3 +1,5 @@
+from django import template
+from django.db import connection
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponse
@@ -72,20 +74,145 @@ def animal_reports(request):
     return render(request,'management_and_reporting/animal_reports.html',{'species':species})
 
 def top_three_attractions(request):
-    
-    return render(request,'management_and_reporting/top_three_attractions.html')
+    if request.method == 'GET':
+        return render(request, 'management_and_reporting/top_three_attractions.html')
+     
+    if request.method == 'POST':
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+
+        # Ensure both dates are provided
+        if not start_date or not end_date:
+            messages.error(request, "Please provide both start and end dates.")
+            return render(request, 'management_and_reporting/top_three_attractions.html')
+
+        query = '''
+            SELECT a.attraction_name, SUM(s.revenue) AS total_revenue
+            FROM 
+                "show" s
+            INNER JOIN 
+                attraction a ON s.attraction_id = a.attraction_id
+            WHERE 
+                s."date" BETWEEN %s AND %s 
+            GROUP BY 
+                a.attraction_name
+            ORDER BY 
+                total_revenue DESC
+            LIMIT 3;
+        '''
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(query, [start_date, end_date])
+                rows = cursor.fetchall()
+            columns = ['attraction_name', 'total_revenue']
+            top_three_attractions = [dict(zip(columns, row)) for row in rows]
+
+            return render(request, 'management_and_reporting/top_three_attractions.html', {'top_three_attractions': top_three_attractions})
+
+        except Exception as e:
+            messages.error(request, f"Failed to load information due to: {str(e)}")
+            return render(request, 'error.html')
+
+
+    return render(request,'management_and_reporting/top_three_attractions.html',{'top_three_attractions':top_three_attractions})
 
 
 def five_best_days(request):
-    
-    return render(request,'management_and_reporting/five_best_days.html')
+    if request.method == 'GET':
+        return render(request, 'management_and_reporting/five_best_days.html')
+     
+    if request.method == 'POST':
+        month_number = request.POST.get('month_number')  # You can make the month number dynamic based on user input
 
+        if not month_number:
+            messages.error(request, "Please select a month.")
+            return render(request, 'management_and_reporting/five_best_days.html')
+
+        query = '''
+            SELECT 
+                DATE_TRUNC('day', s."date") AS show_date,
+                SUM(s.revenue) AS total_revenue
+            FROM 
+                "show" s
+            WHERE 
+                EXTRACT(MONTH FROM s."date") = %s
+            GROUP BY 
+                show_date
+            ORDER BY 
+                total_revenue DESC
+            LIMIT 5;
+        '''
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(query, [month_number])
+                rows = cursor.fetchall()
+            columns = ['show_date', 'total_revenue']
+            top_shows = [dict(zip(columns, row)) for row in rows]
+
+            return render(request, 'management_and_reporting/five_best_days.html', {'top_shows': top_shows})
+
+        except Exception as e:
+            messages.error(request, f"Failed to load information due to: {str(e)}")
+            return render(request, 'error.html')
+
+    return render(request, 'management_and_reporting/five_best_days.html')
 
 def average_revenue(request):
+    query = ''' SELECT a.attraction_name, AVG(s.revenue) AS average_revenue 
+    FROM attraction a INNER JOIN "show" s ON a.attraction_id = s.attraction_id GROUP BY a.attraction_name; '''
     
-    return render(request,'management_and_reporting/average_revenue.html')
+    results, success = execute_query(query, query_type='SELECT')
+
+    if not success:
+        messages.error(request, "Failed to load information.")
+        return render(request, 'error.html') 
+    columns_ = ['attraction_name','average_revenue']
+    attraction_revenues = [dict(zip(columns_, row)) for row in results]
+    
+    query_concession_revenues = '''SELECT c.concession_name, 
+    AVG(tr.unit_price) AS concession_price
+    FROM concession c
+    INNER JOIN transaction_concession tc ON c.concession_id = tc.concession_id
+    INNER JOIN transaction tr ON tc.transaction_id = tr.transaction_id
+    GROUP BY c.concession_name;'''
+    results_concession_revenues, success_concession_revenues = execute_query(query_concession_revenues, query_type='SELECT')
+
+    if not success:
+        messages.error(request, "Failed to load information.")
+        return render(request, 'error.html') 
+    columns_concession_revenues = ['concession_name','concession_price']
+    concession_revenues = [dict(zip(columns_concession_revenues, row)) for row in results_concession_revenues]
+    
+    query_total_attendance = ''' SELECT 
+    a.attraction_name || ' - ' || TO_CHAR(s."date", 'YYYY-MM-DD') || ' ' || TO_CHAR(s."Time", 'HH24:MI') AS show_name,
+    s.tickets_sold AS total_attendance
+    FROM "show" s
+    INNER JOIN attraction a ON s.attraction_id = a.attraction_id
+    ORDER BY s."date", s."Time";'''
+    results_total_attendance, success_total_attendance = execute_query(query_total_attendance, query_type='SELECT')
+
+    if not success:
+        messages.error(request, "Failed to load information.")
+        return render(request, 'error.html') 
+    columns_total_attendance = ['show_name','total_attendance']
+    total_attendance = [dict(zip(columns_total_attendance, row)) for row in results_total_attendance]
+    
+    context = {
+            'attraction_revenues': attraction_revenues,
+            'concession_revenues':concession_revenues,
+            'total_attendance': total_attendance
+        }
+
+    return render(request, 'management_and_reporting/average_revenue.html',context)
+
+def dictfetchall(cursor):
+    "Return all rows from a cursor as a dictionary"
+    columns = [col[0] for col in cursor.description]
+    return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
 
 
 def revenue_by_source(request):
     
     return render(request,'management_and_reporting/revenue_by_source.html')
+
