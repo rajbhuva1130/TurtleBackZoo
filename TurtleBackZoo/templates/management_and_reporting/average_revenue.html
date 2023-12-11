@@ -64,7 +64,7 @@
                 {% for attendance in total_attendance %}
                     <tr>
                         <td>{{ attendance.show_name }}</td>
-                        <td>${{ attendance.total_attendance|floatformat:2 }}</td>
+                        <td>{{ attendance.total_attendance }}</td>
                     </tr>
                 {% endfor %}
             </tbody>

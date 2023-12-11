@@ -27,7 +27,8 @@ def dailyzooacitvity_home(request):
     if request.method == 'POST':
         selected_date = request.POST.get('selected_date')
         query = '''SELECT tr.*, 
-        a.attraction_name || ' - ' || TO_CHAR(sh."date", 'YYYY-MM-DD') || ' ' || TO_CHAR(sh."Time", 'HH24:MI') AS show_name
+        a.attraction_name || ' - ' || TO_CHAR(sh."date", 'YYYY-MM-DD') || ' ' || TO_CHAR(sh."Time", 'HH24:MI') AS show_name,
+        (tr.ncount * tr.unit_price) AS total_cost
         FROM 
             transaction tr
         INNER JOIN 
@@ -43,10 +44,25 @@ def dailyzooacitvity_home(request):
     if not success:
         messages.error(request, "Failed to load information.")
         return render(request, 'error.html') 
-    columns = ['transaction_id','employee_id','time_stamp','unit_price','ncount','transaction_type','show_name']
+    columns = ['transaction_id','employee_id','time_stamp','unit_price','ncount','transaction_type','show_name','total_cost']
     daily_zoo = [dict(zip(columns, row)) for row in results]
-        
-    return render(request, 'daily_zoo_activity/daily_home.html', {'daily_zoo':daily_zoo})
+    
+    query_con = '''SELECT tc.*, t.time_stamp, t.unit_price, t.ncount, t.transaction_type, 
+    c.concession_name, p.product_name, 
+    (t.ncount * t.unit_price) AS total_cost
+    FROM transaction_concession tc
+    JOIN transaction t ON tc.transaction_id = t.transaction_id
+    JOIN concession c ON tc.concession_id = c.concession_id
+    JOIN product p ON tc.product_id = p.product_id
+    WHERE DATE(t.time_stamp) = %s;'''
+    results_con, success_con = execute_query(query_con,selected_date,query_type='SELECT')
+    if not success_con:
+        messages.error(request, "Failed to load information.")
+        return render(request, 'error.html') 
+    columns_con = ['transaction_id','concession_id','product_id','time_stamp','unit_price','ncount','transaction_type','concession_name','product_name','total_cost']
+    daily_zoo_con = [dict(zip(columns_con, row)) for row in results_con]
+    
+    return render(request, 'daily_zoo_activity/daily_home.html', {'daily_zoo':daily_zoo,'daily_zoo_con':daily_zoo_con})
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dictionary"
