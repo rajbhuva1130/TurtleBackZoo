@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revenue by Source</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Revenue by Source</h1>
+
+        <!-- Date Selector Form -->
+        <form action="{% url 'revenue_by_source' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="dateInput">Select Date:</label>
+                <input type="date" id="dateInput" name="selected_date" class="form-control" required>
+                <button type="submit" class="btn btn-primary mt-2">Show Revenue</button>
+            </div>
+        </form>
+
+        <!-- Displaying Revenue Data (if available) -->
+        {% if selected_date %}
+            <h2>Revenue for {{ selected_date }}</h2>
+
+            <h3>Attractions Revenue</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Attraction Name</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attraction in attractions %}
+                        <tr>
+                            <td>{{ attraction.attraction_name }}</td>
+                            <td>{{ attraction.total_revenue }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h3>Concessions Revenue</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Concession Name</th>
+                        <th>Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for concession in concessions %}
+                        <tr>
+                            <td>{{ concession.concession_name }}</td>
+                            <td>{{ concession.total_revenue }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</body>
+</html>
+{% endblock %}

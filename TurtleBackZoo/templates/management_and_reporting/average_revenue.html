@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revenue and Attendance Report</title>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Revenue and Attendance Report</h1>
+
+        <h2 class="mt-4">Average Revenue for Each Attraction</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Attraction Name</th>
+                    <th>Average Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attraction in attraction_revenues %}
+                    <tr>
+                        <td>{{ attraction.attraction_name }}</td>
+                        <td>${{ attraction.average_revenue|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="container mt-5">
+
+        <h2 class="mt-4">Average Revenue for Each Concession</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Concession Name</th>
+                    <th>Average Revenue</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for concession in concession_revenues %}
+                    <tr>
+                        <td>{{ concession.concession_name }}</td>
+                        <td>${{ concession.average_revenue|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="container mt-5">  
+        <h2 class="mt-4">Total Attendance</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>show_name</th>
+                    <th>Total Attendance </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attendance in total_attendance %}
+                    <tr>
+                        <td>{{ attendance.show_name }}</td>
+                        <td>${{ attendance.total_attendance|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+    </div>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Shows by Month</title>
+
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Top 5 Best Day by Month</h1>
+        
+        <form action="{% url 'five_best_days' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="monthNumber">Select Month:</label>
+                <select class="form-control" id="monthNumber" name="month_number">
+                    <option value="">-- Select a Month --</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Show Top Shows</button>
+        </form>
+
+        {% if top_shows %}
+            <h2 class="mt-5 text-center">Top Five Shows in Selected Month</h2>
+            <table class="table table-hover mt-4">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Date</th>
+                        <th scope="col">Total Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for show in top_shows %}
+                        <tr>
+                            <td>{{ show.show_date|date:"Y-m-d" }}</td>
+                            <td>${{ show.total_revenue|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-center mt-4">Select a month to view the top shows.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
+{% endblock %}
