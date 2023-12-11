@@ -10,7 +10,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Hello Daily Zoo {{ name }}!!!</h1>
+        <h1 style="text-align: center;"> Daily Zoo Activity </h1>
         
         <!-- Date Selector Form -->
         <form action="{% url 'dailyzooacitvity_home' %}" method="post">
@@ -23,30 +23,59 @@
         </form>
 
         <!-- Displaying Transactions (if available) -->
-        {% if daily_zoo %}
-            <h2>Transactions for {{ selected_date }}</h2>
+        {% if daily_zoo or daily_zoo_con %}
+            {% if daily_zoo %}
+                <h2>Transactions for Attration</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Show Name</th>
+                            <th>Timestamp</th>
+                            <th>Unit Price</th>
+                            <th>Count</th>
+                            <th>Transaction Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transaction in daily_zoo %}
+                            <tr>
+                                <td>{{ transaction.show_name }}</td>
+                                <td>{{ transaction.time_stamp }}</td>
+                                <td>{{ transaction.unit_price }}</td>
+                                <td>{{ transaction.ncount }}</td>
+                                <td>{{ transaction.total_cost }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+            {% if daily_zoo_con%}
+            <h2>Transactions for Concession</h2>
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Show Name</th>
+                        <th>Concession Name</th>
+                        <th>Product Name</th>
                         <th>Timestamp</th>
                         <th>Unit Price</th>
                         <th>Count</th>
-                        <th>Transaction Type</th>
+                        <th>Transaction Total</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for transaction in daily_zoo %}
+                    {% for transaction in daily_zoo_con %}
                         <tr>
-                            <td>{{ transaction.show_name }}</td>
+                            <td>{{ transaction.concession_name }}</td>
+                            <td>{{ transaction.product_name }}</td>
                             <td>{{ transaction.time_stamp }}</td>
                             <td>{{ transaction.unit_price }}</td>
                             <td>{{ transaction.ncount }}</td>
-                            <td>{{ transaction.transaction_type }}</td>
+                            <td>{{ transaction.total_cost }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
+            {% endif %}
         {% else %}
             <p>No transactions available for this date.</p>
         {% endif %}

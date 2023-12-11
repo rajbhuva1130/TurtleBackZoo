@@ -25,39 +25,44 @@ def managementandreporting_home(request):
     return render(request,'home.html',{'name':'managementandreporting_home'})
 
 def animal_reports(request):
-    query = '''
-        SELECT 
-            sp.species_name,
-            COUNT(CASE WHEN an.status = 'Healthy' THEN 1 ELSE NULL END) AS number_healthy,
-            COUNT(CASE WHEN an.status = 'Medical Care' THEN 1 ELSE NULL END) AS number_medical_care,
-            COUNT(CASE WHEN an.status = 'Maternal Leave' THEN 1 ELSE NULL END) AS maternal_leave,
-            COUNT(CASE WHEN an.status = 'New Born' THEN 1 ELSE NULL END) AS number_newborn,
-            sp.monthly_food_cost AS monthly_cost,
-            sp.monthly_food_cost * (
-                COUNT(CASE WHEN an.status = 'Healthy' THEN 1 END) + 
-                COUNT(CASE WHEN an.status = 'Medical Care' THEN 1 END) + 
-                COUNT(CASE WHEN an.status = 'Maternal Leave' THEN 1 END) + 
-                COUNT(CASE WHEN an.status = 'New Born' THEN 1 END)
-            ) AS total_monthly_food_cost,
-            COUNT(DISTINCT vet.employee_id) AS number_of_vets,
-            COUNT(DISTINCT acs.employee_id) AS number_of_care_staff
-        FROM 
-            species sp
-        LEFT JOIN 
-            animals an ON sp.species_id = an.species_id
-        LEFT JOIN 
-            veterinarian vet ON sp.species_id = vet.species_id
-        LEFT JOIN 
-            animal_care_trainer_and_specialist acs ON sp.species_id = acs.species_id
-        LEFT JOIN 
-            employee e ON vet.employee_id = e.employee_id OR acs.employee_id = e.employee_id
-        LEFT JOIN 
-            employee_type et ON e.employee_type_id = et.employee_type_id
-        GROUP BY 
-            sp.species_name, sp.monthly_food_cost
-        ORDER BY 
-            sp.species_name;
-        '''
+    query = '''SELECT 
+    sp.species_name,
+    COALESCE(an_status.number_healthy, 0) AS number_healthy,
+    COALESCE(an_status.number_medical_care, 0) AS number_medical_care,
+    COALESCE(an_status.maternal_leave, 0) AS maternal_leave,
+    COALESCE(an_status.number_newborn, 0) AS number_newborn,
+    sp.monthly_food_cost AS monthly_cost_per_animal,
+    sp.monthly_food_cost * COALESCE(an_status.total_animals, 0) AS total_monthly_food_cost,
+    COUNT(DISTINCT vet.employee_id) AS number_of_vets,
+    SUM(CASE WHEN et.employee_type = 'Veterinarians' THEN et.rate ELSE 0 END) AS vet_cost_per_hour,
+    SUM(CASE WHEN et.employee_type = 'Veterinarians' THEN et.rate * 160 ELSE 0 END) AS total_vet_cost_per_month,
+    COUNT(DISTINCT acs.employee_id) AS number_of_care_staff,
+    SUM(CASE WHEN et.employee_type = 'Animal Care' THEN et.rate ELSE 0 END) AS acs_cost_per_hour,
+    SUM(CASE WHEN et.employee_type = 'Animal Care' THEN et.rate * 160 ELSE 0 END) AS total_acs_cost_per_month
+    FROM 
+        species sp
+    LEFT JOIN 
+        (SELECT 
+            species_id,
+            COUNT(CASE WHEN status = 'Healthy' THEN 1 END) AS number_healthy,
+            COUNT(CASE WHEN status = 'Medical Care' THEN 1 END) AS number_medical_care,
+            COUNT(CASE WHEN status = 'Maternal Leave' THEN 1 END) AS maternal_leave,
+            COUNT(CASE WHEN status = 'New Born' THEN 1 END) AS number_newborn,
+            COUNT(CASE WHEN status IN ('Healthy', 'Medical Care', 'Maternal Leave', 'New Born') THEN 1 END) AS total_animals
+        FROM animals 
+        GROUP BY species_id) an_status ON sp.species_id = an_status.species_id
+    LEFT JOIN 
+        veterinarian vet ON sp.species_id = vet.species_id
+    LEFT JOIN 
+        animal_care_trainer_and_specialist acs ON sp.species_id = acs.species_id
+    LEFT JOIN 
+        employee e ON vet.employee_id = e.employee_id OR acs.employee_id = e.employee_id
+    LEFT JOIN 
+        employee_type et ON e.employee_type_id = et.employee_type_id
+    GROUP BY 
+        sp.species_name, sp.monthly_food_cost, an_status.number_healthy, an_status.number_medical_care, an_status.maternal_leave, an_status.number_newborn, an_status.total_animals
+    ORDER BY 
+        sp.species_name;'''
 
     results, success = execute_query(query, query_type='SELECT')
 
@@ -66,7 +71,7 @@ def animal_reports(request):
         return render(request, 'error.html') 
     
     columns_ = ['species_name','number_healthy', 'number_medical_care', 'maternal_leave', 'number_newborn','monthly_cost',
-                 'total_monthly_food_cost' ,'number_of_vets','total_vet_cost']
+                 'total_monthly_food_cost' ,'number_of_vets','vet_cost','total_vet_cost','number_of_care_staff','acs_cost','total_acs_cost']
     
     species = [dict(zip(columns_, row)) for row in results]
 
@@ -115,7 +120,6 @@ def top_three_attractions(request):
 
 
     return render(request,'management_and_reporting/top_three_attractions.html',{'top_three_attractions':top_three_attractions})
-
 
 def five_best_days(request):
     if request.method == 'GET':
@@ -170,17 +174,21 @@ def average_revenue(request):
     attraction_revenues = [dict(zip(columns_, row)) for row in results]
     
     query_concession_revenues = '''SELECT c.concession_name, 
-    AVG(tr.unit_price) AS concession_price
-    FROM concession c
-    INNER JOIN transaction_concession tc ON c.concession_id = tc.concession_id
-    INNER JOIN transaction tr ON tc.transaction_id = tr.transaction_id
-    GROUP BY c.concession_name;'''
+    AVG(tr.unit_price * tr.ncount) AS average_revenue
+    FROM 
+        concession c
+    INNER JOIN 
+        transaction_concession tc ON c.concession_id = tc.concession_id
+    INNER JOIN 
+        transaction tr ON tc.transaction_id = tr.transaction_id
+    GROUP BY 
+        c.concession_name;'''
     results_concession_revenues, success_concession_revenues = execute_query(query_concession_revenues, query_type='SELECT')
 
     if not success:
         messages.error(request, "Failed to load information.")
         return render(request, 'error.html') 
-    columns_concession_revenues = ['concession_name','concession_price']
+    columns_concession_revenues = ['concession_name','average_revenue']
     concession_revenues = [dict(zip(columns_concession_revenues, row)) for row in results_concession_revenues]
     
     query_total_attendance = ''' SELECT 
@@ -210,12 +218,6 @@ def dictfetchall(cursor):
     columns = [col[0] for col in cursor.description]
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-
-
-
-    
-   
-
 def revenue_by_source(request):
     if request.method == 'POST':
         selected_date = request.POST.get('selected_date')
@@ -235,7 +237,10 @@ def revenue_by_source(request):
             GROUP BY 
                 a.attraction_id, a.attraction_name;
         '''
-        attractions, success_attractions = execute_query(query_attractions, selected_date, query_type="SELECT")
+        attractions_re, success_attractions = execute_query(query_attractions, selected_date, query_type="SELECT")
+        
+        columns_at = ['attraction_id','attraction_name','total_revenue']
+        attractions = [dict(zip(columns_at, row)) for row in attractions_re]
 
         # Fetching revenue from concessions
         query_concessions = '''
@@ -254,7 +259,11 @@ def revenue_by_source(request):
             c.concession_name;
 
         '''
-        concessions, success_concessions = execute_query(query_concessions, selected_date, query_type="SELECT")
+        concessions_re, success_concessions = execute_query(query_concessions, selected_date, query_type="SELECT")
+        
+        columns_con = ['concession_name','total_revenue']
+        concessions = [dict(zip(columns_con, row)) for row in concessions_re]
+
 
         if success_attractions and success_concessions:
             return render(request, 'management_and_reporting/revenue_by_source.html', {

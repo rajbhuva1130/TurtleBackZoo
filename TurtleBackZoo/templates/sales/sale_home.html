@@ -5,7 +5,9 @@
 {% endblock %}
 
 {% block content %}
+<div class="container"style="text-align: center;">
     <h1>Sale Home</h1>
     <button onclick="window.location.href='{% url 'attraction_sale' %}'" style="padding: 12px 24px; font-size: 18px;">Attraction</button>
     <button onclick="window.location.href='{% url 'concession_sale' %}'" style="padding: 12px 24px; font-size: 18px;">Concession</button>
+</div>
 {% endblock %}

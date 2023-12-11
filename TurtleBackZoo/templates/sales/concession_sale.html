@@ -4,6 +4,7 @@
 {% endblock %}
 
 {% block content %}
+<div class="container"style="text-align: center;">
     <h1>Concessions Sale</h1>
     <form method="post" action="{% url 'menu_concession_sale' %}">
         {% csrf_token %}
@@ -13,4 +14,5 @@
             <br><br>
         {% endfor %}
     </form>
+</div>
 {% endblock %}
