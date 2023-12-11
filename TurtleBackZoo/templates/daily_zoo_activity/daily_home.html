@@ -6,10 +6,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>hello </title>
+    <title>Daily Transactions</title>
 </head>
 <body>
-    hello daily zoo {{name}} !!!
+    <div class="container">
+        <h1>Hello Daily Zoo {{ name }}!!!</h1>
+        
+        <!-- Date Selector Form -->
+        <form action="{% url 'dailyzooacitvity_home' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="dateInput">Select Date:</label>
+                <input type="date" id="dateInput" name="selected_date" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Show Transactions</button>
+        </form>
+
+        <!-- Displaying Transactions (if available) -->
+        {% if daily_zoo %}
+            <h2>Transactions for {{ selected_date }}</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Show Name</th>
+                        <th>Timestamp</th>
+                        <th>Unit Price</th>
+                        <th>Count</th>
+                        <th>Transaction Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in daily_zoo %}
+                        <tr>
+                            <td>{{ transaction.show_name }}</td>
+                            <td>{{ transaction.time_stamp }}</td>
+                            <td>{{ transaction.unit_price }}</td>
+                            <td>{{ transaction.ncount }}</td>
+                            <td>{{ transaction.transaction_type }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No transactions available for this date.</p>
+        {% endif %}
+    </div>
 </body>
 </html>
 {% endblock %}

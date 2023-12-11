@@ -212,7 +212,60 @@ def dictfetchall(cursor):
 
 
 
+
+    
+   
+
 def revenue_by_source(request):
+    if request.method == 'POST':
+        selected_date = request.POST.get('selected_date')
+
+        # Fetching total revenue for attractions
+        query_attractions = '''
+            SELECT 
+                a.attraction_id, 
+                a.attraction_name, 
+                COALESCE(SUM(s.revenue), 0) AS total_revenue
+            FROM 
+                attraction a
+            LEFT JOIN 
+                "show" s ON a.attraction_id = s.attraction_id
+            WHERE 
+                s."date" = %s
+            GROUP BY 
+                a.attraction_id, a.attraction_name;
+        '''
+        attractions, success_attractions = execute_query(query_attractions, selected_date, query_type="SELECT")
+
+        # Fetching revenue from concessions
+        query_concessions = '''
+            SELECT 
+            c.concession_name, 
+            COALESCE(SUM(t.ncount * t.unit_price), 0) AS total_revenue
+        FROM 
+            concession c
+        LEFT JOIN 
+            transaction_concession tc ON c.concession_id = tc.concession_id
+        LEFT JOIN 
+            "transaction" t ON tc.transaction_id = t.transaction_id
+        WHERE 
+            t.time_stamp::date = %s 
+        GROUP BY 
+            c.concession_name;
+
+        '''
+        concessions, success_concessions = execute_query(query_concessions, selected_date, query_type="SELECT")
+
+        if success_attractions and success_concessions:
+            return render(request, 'management_and_reporting/revenue_by_source.html', {
+                'selected_date': selected_date, 
+                'attractions': attractions,
+                'concessions': concessions 
+            })
+        else:
+            # Handle database query failure
+            error_message = "Failed to fetch revenue data from the database."
+            return render(request, 'error.html', {'error_message': error_message})
+
     
     return render(request,'management_and_reporting/revenue_by_source.html')
-
