@@ -184,10 +184,24 @@ def five_best_days(request):
     return render(request, 'management_and_reporting/five_best_days.html')
 
 def average_revenue(request):
+    if request.method == 'GET':
+        return render(request, 'management_and_reporting/average_revenue.html')
+     
+    if request.method == 'POST':
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+
+        # Ensure both dates are provided
+        if not start_date or not end_date:
+            messages.error(request, "Please provide both start and end dates.")
+            return render(request, 'management_and_reporting/top_three_attractions.html')
+
     query = ''' SELECT a.attraction_name, AVG(s.revenue) AS average_revenue 
-    FROM attraction a INNER JOIN "show" s ON a.attraction_id = s.attraction_id GROUP BY a.attraction_name; '''
+    FROM attraction a INNER JOIN "show" s ON a.attraction_id = s.attraction_id
+    WHERE s."date" BETWEEN %s AND %s
+    GROUP BY a.attraction_name; '''
     
-    results, success = execute_query(query, query_type='SELECT')
+    results, success = execute_query(query,start_date, end_date ,query_type='SELECT')
 
     if not success:
         messages.error(request, "Failed to load information.")
@@ -203,9 +217,10 @@ def average_revenue(request):
         transaction_concession tc ON c.concession_id = tc.concession_id
     INNER JOIN 
         transaction tr ON tc.transaction_id = tr.transaction_id
+    WHERE DATE(tr.time_stamp) BETWEEN %s AND %s
     GROUP BY 
         c.concession_name;'''
-    results_concession_revenues, success_concession_revenues = execute_query(query_concession_revenues, query_type='SELECT')
+    results_concession_revenues, success_concession_revenues = execute_query(query_concession_revenues,start_date, end_date , query_type='SELECT')
 
     if not success:
         messages.error(request, "Failed to load information.")
@@ -218,8 +233,9 @@ def average_revenue(request):
     s.tickets_sold AS total_attendance
     FROM "show" s
     INNER JOIN attraction a ON s.attraction_id = a.attraction_id
+    WHERE s."date" BETWEEN %s AND %s
     ORDER BY s."date", s."Time";'''
-    results_total_attendance, success_total_attendance = execute_query(query_total_attendance, query_type='SELECT')
+    results_total_attendance, success_total_attendance = execute_query(query_total_attendance,start_date, end_date , query_type='SELECT')
 
     if not success:
         messages.error(request, "Failed to load information.")
@@ -230,7 +246,8 @@ def average_revenue(request):
     context = {
             'attraction_revenues': attraction_revenues,
             'concession_revenues':concession_revenues,
-            'total_attendance': total_attendance
+            'total_attendance': total_attendance,
+            'average_revenues':attraction_revenues
         }
 
     return render(request, 'management_and_reporting/average_revenue.html',context)
@@ -307,8 +324,10 @@ def revenue_by_source(request):
         concessions_total_revenue_result, success_concessions_total_revenue = execute_query(query_total_concessions_revenue, selected_date, query_type="SELECT")
         concessions_total_revenue = concessions_total_revenue_result[0][0]
 
-        total_revenue = float(attractions_total_revenue) +float(concessions_total_revenue)
-
+        if attractions_total_revenue != None and concessions_total_revenue != None:
+            total_revenue = float(attractions_total_revenue) +float(concessions_total_revenue)
+        else:
+            total_revenue = 0
 
         if success_attractions and success_concessions:
             return render(request, 'management_and_reporting/revenue_by_source.html', {
