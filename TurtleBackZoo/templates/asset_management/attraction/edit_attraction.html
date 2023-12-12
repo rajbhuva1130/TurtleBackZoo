@@ -24,7 +24,7 @@
         <input type="text" id="attraction_name" name="attraction_name" value="{{ attraction.attraction_name }}" required> 
 
         <label for="seats">Seats:</label> 
-        <input type="number" id="seats" name="seats" value="{{ attraction.seats }}" required> 
+        <input type="number" id="seats" name="seats" value="{{ attraction.seats }}" min="0" required> 
 
         <label for="building">Building:</label> 
         <input type="hidden" name="current_building_id" value="{{ attraction.building_id }}"> 
@@ -51,7 +51,7 @@
             </select> 
 
             <label for="quantity">Quantity:</label> 
-            <input type="number" id="quantity" name="quantity" value="{{ requirement.quantity }}" required> 
+            <input type="number" id="quantity" name="quantity" value="{{ requirement.quantity }}" min="0" required> 
         
         {% endfor %}
 

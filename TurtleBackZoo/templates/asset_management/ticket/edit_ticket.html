@@ -21,7 +21,7 @@
         <input type="text" id="ticket_type" name="ticket_type" class="form-control" value="{{ ticket.ticket_type }}" required>
         
         <label for="price">Price:</label>
-        <input type="number" id="price" name="price" class="form-control" value="{{ ticket.price }}" step="0.01" required>
+        <input type="number" id="price" name="price" class="form-control" value="{{ ticket.price }}" step="0.01" min="0" required>
         
         <label for="description">Description:</label>
         <textarea id="description" name="description" class="form-control">{{ ticket.description }}</textarea>

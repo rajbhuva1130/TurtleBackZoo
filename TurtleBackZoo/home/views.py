@@ -90,7 +90,7 @@ def process_transaction(request):
                 if key.startswith('ticket_'):
                     ticket_id = key.split('_')[1]  # Extract ticket ID from the key
                     ticket_price = key.split('_')[2]
-                    ticket_quantity = value
+                    ticket_quantity = int(value)
                     if ticket_quantity > 0 :
                         query_insert_transaction = "INSERT into transaction (employee_id,unit_price,ncount,transaction_type) VALUES (%s, %s, %s, %s) RETURNING transaction_id"
                         transaction_id , success = execute_query(query_insert_transaction, employee_id, ticket_price, ticket_quantity,transaction_type, query_type="INSERT")

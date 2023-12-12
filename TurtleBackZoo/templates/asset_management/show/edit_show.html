@@ -21,7 +21,7 @@
         
        
         <label for="tickets_sold">Tickets Sold:</label>
-        <input type="number" id="tickets_sold" name="tickets_sold" class="form-control" value="{{ show.tickets_sold }}" required>
+        <input type="number" id="tickets_sold" name="tickets_sold" class="form-control" value="{{ show.tickets_sold }}" min="0" required>
     
         <label for="status">Status:</label>
         <select id="status" name="status" class="form-control" required>

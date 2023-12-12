@@ -1,40 +1,91 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% if messages %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Attraction</title>
+</head>
+
+<body>
+    {% extends "base.html" %}
+
+    {% if messages %}
     <ul class="messages">
         {% for message in messages %}
-            <li>{{ message }}</li>
+        <li>{{ message }}</li>
         {% endfor %}
     </ul>
-{% endif %}
+    {% endif %}
 
-{% block content %}
-<div class="container">
-<h2>Add Attraction</h2>
-    <form action="{% url 'add_attraction' %}" method="post">
-        {% csrf_token %}
-        <label for="attraction_name">Attraction Name:</label> 
-        <input type="text" id="attraction_name" name="attraction_name" required> 
-        <label for="seats">Seats:</label> 
-        <input type="number" id="seats" name="seats" required> 
-        <label for="building_id">Building:</label> 
-        <select id="building_id" name="building_id" required>
-            <option value="">Select Building</option>
-            {% for building in buildings %}
+    {% block content %}
+    <div class="container">
+        <h2>Add Attraction</h2>
+        <form id="attractionForm" action="{% url 'add_attraction' %}" method="post">
+            {% csrf_token %}
+            <label for="attraction_name">Attraction Name:</label>
+            <input type="text" id="attraction_name" name="attraction_name" required>
+            <label for="seats">Seats:</label>
+            <input type="number" id="seats" name="seats" min="0" required>
+            <label for="building_id">Building:</label>
+            <select id="building_id" name="building_id" required>
+                <option value="">Select Building</option>
+                {% for building in buildings %}
                 <option value="{{ building.building_id }}">{{ building.building_name }}</option>
-            {% endfor %}
-        </select> 
-        <label for="species">Species:</label> 
-        <select name="species_id" id="species">
-            <option value="">Select Species</option>
-            {% for specie in species %}
-                <option value="{{ specie.species_id }}">{{ specie.species_name }}</option>
-            {% endfor %}
-        </select> 
-        <label for="quantity">Quantity:</label> 
-        <input type="number" id="quantity" name="quantity" required> 
-        <input type="submit" value="Submit">
-    </form>
-    <a href="{% url 'attraction_actions' %}" class="button">Back</a>
-</div>
-{% endblock %}
+                {% endfor %}
+            </select>
+            <div id="speciesFieldsContainer">
+                <div class="speciesFields">
+                    <label for="species">Species:</label>
+                    <select name="species_id[]" class="species">
+                        <option value="">Select Species</option>
+                        {% for specie in species %}
+                        <option value="{{ specie.species_id }}">{{ specie.species_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" class="quantity" name="quantity[]" min="0" required>
+                </div>
+            </div>
+            <button type="button" id="addSpecies">Add Species</button>
+            <input type="submit" value="Submit">
+        </form>
+        <a href="{% url 'attraction_actions' %}" class="button">Back</a>
+    </div>
+
+    <script>
+        document.getElementById('addSpecies').addEventListener('click', function () {
+            var speciesFieldsContainer = document.getElementById('speciesFieldsContainer');
+            var newSpeciesFields = document.querySelector('.speciesFields').cloneNode(true);
+
+            // Reset values in the cloned fields
+            newSpeciesFields.querySelector('.species').value = "";
+            newSpeciesFields.querySelector('.quantity').value = "";
+
+            speciesFieldsContainer.appendChild(newSpeciesFields);
+        });
+
+        document.getElementById('attractionForm').addEventListener('submit', function (event) {
+            // Prevent the default form submission
+            event.preventDefault();
+
+            // Create FormData object and append form data
+            var formData = new FormData(this);
+
+            // Debug: Log form data to the console
+            console.log("Form Data:");
+            for (var pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+
+            // Perform your desired AJAX submission or any other logic here
+
+            // Optional: Uncomment the line below if you want to submit the form traditionally
+            this.submit();
+        });
+    </script>
+
+    {% endblock %}
+</body>
+
+</html>
