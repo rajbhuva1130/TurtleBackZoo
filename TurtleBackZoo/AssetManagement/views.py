@@ -575,6 +575,7 @@ def edit_employee(request, emp_number):
                                                                                'specializations':specializations, 'species':species,'employee_data':employee_data})
 
     elif request.method == 'POST':
+        print("\n\n------------\n\n-----------------\n\n")
         # Extract data from form submission
         current_type_id = request.POST.get('current_type_id') 
         first_name = request.POST.get('first_name')
@@ -603,7 +604,8 @@ def edit_employee(request, emp_number):
         
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(password.encode(), salt)
-
+        print(first_name, middle_name, last_name, street, city, state, country, zipcode, email, phone, hashed_password, employee_type_id,
+            emp_number)
         # Update employee information in the database
         query_update = """ UPDATE employee SET first_name = %s, middle_name = %s, last_name = %s, street = %s, 
         city = %s, state = %s, country = %s, zipcode = %s, email = %s, phone = %s, password = %s,

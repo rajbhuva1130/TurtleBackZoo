@@ -70,7 +70,7 @@
         <!-- Ticket Sellers Section -->
         <div id="Ticket Sellers" class="employee-section">ticket_sellers
             <label for="shift">Shift:</label>
-            <input type="text" id="shift" name="shift"value="{{ employee_data.0.shift }}" required>
+            <input type="text" id="shift" name="shift"value="{{ employee_data.0.shift }}" >
         </div>
     
         <!-- Customer Service Section -->
@@ -100,11 +100,11 @@
         <!-- Veterinarians Section -->
         <div id="Veterinarians" class="employee-section">
             <label for="license_number">License Number:</label>
-            <input type="text" id="license_number" name="license_number" value="{{ employee_data.0.license_number }}" required>
+            <input type="text" id="license_number" name="license_number" value="{{ employee_data.0.license_number }}" >
             <label for="degree">Degree:</label>
-            <input type="text" id="degree" name="degree" value="{{ employee_data.0.degree }}" required>
+            <input type="text" id="degree" name="degree" value="{{ employee_data.0.degree }}" >
             <label for="species">Species:</label>
-            <select id="specie_id" name="specie_id" required>  
+            <select id="specie_id" name="specie_id" >  
                 {% for species in species %}
                     <option value="{{ species.species_id }}" {% if species.species_id == employee_data.0.specie_id %}selected{% endif %}>
                         {{ species.species_name }}
@@ -117,9 +117,9 @@
         <!-- Animal Care Section -->
         <div id="Animal Care" class="employee-section">
             <label for="experience">Experience:</label>
-            <input type="text" id="experience" name="experience" value="{{ employee_data.0.experience }}" required>
+            <input type="text" id="experience" name="experience" value="{{ employee_data.0.experience }}" >
             <label for="species">Species:</label>
-            <select id="species_id" name="species_id" required>  
+            <select id="species_id" name="species_id" >  
                 {% for species in species %}
                     <option value="{{ species.species_id }}" {% if species.species_id == employee_data.0.species_id %}selected{% endif %}>
                         {{ species.species_name }}
