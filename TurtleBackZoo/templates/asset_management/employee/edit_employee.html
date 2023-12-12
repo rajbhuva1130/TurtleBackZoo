@@ -14,44 +14,44 @@
 
 {% block content %}
 <div class="container">
-    <h1>Edit Employee's info: {{ employee.first_name }} {{ employee.last_name }}</h1>
+    <h1>Edit Employee's info: {{ employee_data.0.first_name }} {{ employee_data.0.last_name }}</h1>
 
-    <form action="{% url 'edit_employee' employee.emp_number %}" method="post">
+    <form action="{% url 'edit_employee' employee_data.0.emp_number %}" method="post">
         {% csrf_token %}
-        <input type="hidden" name="current_type_id" value="{{ employee.employee_type_id }}">
+        <input type="hidden" name="current_type_id" value="{{ employee_data.0.employee_type_id }}">
 
         <label for="first_name">First Name:</label>
-        <input type="text" id="first_name" name="first_name" value="{{ employee.first_name }}" required>
+        <input type="text" id="first_name" name="first_name" value="{{ employee_data.0.first_name }}" required>
 
         <label for="middle_name">Middle Name:</label>
-        <input type="text" id="middle_name" name="middle_name" value="{{ employee.middle_name }}">
+        <input type="text" id="middle_name" name="middle_name" value="{{ employee_data.0.middle_name }}">
 
         <label for="last_name">Last Name:</label>
-        <input type="text" id="last_name" name="last_name" value="{{ employee.last_name }}" required>
+        <input type="text" id="last_name" name="last_name" value="{{ employee_data.0.last_name }}" required>
 
         <label for="street">Street:</label>
-        <input type="street" id="street" name="street" value="{{ employee.street }}" required>
+        <input type="street" id="street" name="street" value="{{ employee_data.0.street }}" required>
 
         <label for="city">City:</label>
-        <input type="city" id="city" name="city" value="{{ employee.city }}" required>
+        <input type="city" id="city" name="city" value="{{ employee_data.0.city }}" required>
 
         <label for="state">State:</label>
-        <input type="state" id="state" name="state" value="{{ employee.state }}" required>
+        <input type="state" id="state" name="state" value="{{ employee_data.0.state }}" required>
 
         <label for="country">Country:</label>
-        <input type="country" id="country" name="country" value="{{ employee.country }}" required>
+        <input type="country" id="country" name="country" value="{{ employee_data.0.country }}" required>
 
         <label for="zipcode">Zipcode:</label>
-        <input type="zipcode" id="zipcode" name="zipcode" value="{{ employee.zipcode }}" required>
+        <input type="zipcode" id="zipcode" name="zipcode" value="{{ employee_data.0.zipcode }}" required>
 
         <label for="email">Email:</label>
-        <input type="email" id="email" name="email" value="{{ employee.email }}" required>
+        <input type="email" id="email" name="email" value="{{ employee_data.0.email }}" required>
 
         <label for="phone">Phone:</label>
-        <input type="text" id="phone" name="phone" value="{{ employee.phone }}" required>
+        <input type="text" id="phone" name="phone" value="{{ employee_data.0.phone }}" required>
 
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password" value="{{ employee.password }}" required>
+        <input type="password" id="password" name="password" value="{{ employee_data.0.password }}" required>
 
         <!-- Employee Type Dropdown -->
         <label for="employee_type_id">Employee Type:</label>
@@ -59,7 +59,7 @@
             <option value="">Select Employee Type</option>
             {% for employee_type in employee_types %}
                 <option value="{{ employee_type.employee_type_id }}"
-                        {% if employee_type.employee_type_id == employee.employee_type_id %} selected {% endif %}>
+                        {% if employee_type.employee_type_id == employee_data.0.employee_type_id %} selected {% endif %}>
                     {{ employee_type.employee_type }}
                 </option>
             {% endfor %}
@@ -68,9 +68,9 @@
         <input id="employee_type" name="employee_type" type="hidden" />
 
         <!-- Ticket Sellers Section -->
-        <div id="Ticket Sellers" class="employee-section">
+        <div id="Ticket Sellers" class="employee-section">ticket_sellers
             <label for="shift">Shift:</label>
-            <input type="text" id="shift" name="shift">
+            <input type="text" id="shift" name="shift"value="{{ employee_data.0.shift }}" required>
         </div>
     
         <!-- Customer Service Section -->
@@ -79,7 +79,8 @@
             <select id="concession_id" name="concession_id">
                 <option value="">Select Concession</option>
                 {% for concession in concessions %}
-                    <option value="{{ concession.concession_id }}">{{ concession.concession_name }}</option>
+                    <option value="{{ concession.concession_id }}"{% if concession.concession_id == employee_data.0.concession_id %} selected {% endif %}>
+                        {{ concession.concession_name }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -90,7 +91,8 @@
             <select id="specialization" name="specialization">
                 <option value="">Select Specialization</option>
                 {% for specialization in specializations %}
-                    <option value="{{ specialization.specialization }}">{{ specialization.specialization }}</option>
+                    <option value="{{ specialization.specialization }}"{% if specialization.specialization == employee_data.0.specialization %}selected{% endif %}>
+                        {{ specialization.specialization }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -98,13 +100,13 @@
         <!-- Veterinarians Section -->
         <div id="Veterinarians" class="employee-section">
             <label for="license_number">License Number:</label>
-            <input type="text" id="license_number" name="license_number">
+            <input type="text" id="license_number" name="license_number" value="{{ employee_data.0.license_number }}" required>
             <label for="degree">Degree:</label>
-            <input type="text" id="degree" name="degree">
+            <input type="text" id="degree" name="degree" value="{{ employee_data.0.degree }}" required>
             <label for="species">Species:</label>
             <select id="specie_id" name="specie_id" required>  
                 {% for species in species %}
-                    <option value="{{ species.species_id }}" {% if species.species_id == animal.species_id %}selected{% endif %}>
+                    <option value="{{ species.species_id }}" {% if species.species_id == employee_data.0.specie_id %}selected{% endif %}>
                         {{ species.species_name }}
                     </option>
                 {% endfor %}
@@ -115,11 +117,11 @@
         <!-- Animal Care Section -->
         <div id="Animal Care" class="employee-section">
             <label for="experience">Experience:</label>
-            <input type="text" id="experience" name="experience">
+            <input type="text" id="experience" name="experience" value="{{ employee_data.0.experience }}" required>
             <label for="species">Species:</label>
             <select id="species_id" name="species_id" required>  
                 {% for species in species %}
-                    <option value="{{ species.species_id }}" {% if species.species_id == animal.species_id %}selected{% endif %}>
+                    <option value="{{ species.species_id }}" {% if species.species_id == employee_data.0.species_id %}selected{% endif %}>
                         {{ species.species_name }}
                     </option>
                 {% endfor %}
