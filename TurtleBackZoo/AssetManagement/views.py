@@ -453,6 +453,7 @@ def add_employee(request):
         
 def edit_employee(request, emp_number):
     if request.method == 'GET':
+        emp_type = request.GET.get('emp_type')
         # Retrieve employee types
         employee_type_query = "SELECT DISTINCT employee_type, employee_type_id FROM employee_type;"  # Adjust the query as needed
         results_employee_type, success_employee_type = execute_query(employee_type_query, query_type="SELECT")
@@ -497,6 +498,7 @@ def edit_employee(request, emp_number):
         columns_species = ['species_name','species_id']
         species = [dict(zip(columns_species, row)) for row in result_species]
         
+        employee_data = []
         # Fetch the employee details by name to pre-fill the form
         query = "SELECT * FROM employee WHERE emp_number = %s;"  # Adjust the query as needed
         results, success = execute_query(query, emp_number, query_type="SELECT")
@@ -508,13 +510,69 @@ def edit_employee(request, emp_number):
                 'start_date', 'email', 'phone', 'password',
                 'supervisor_id', 'employee_type_id','emp_number'
             ]
-            employee = dict(zip(columns, results[0]))  # Assuming the result is a single record
-            return render(request, 'asset_management/employee/edit_employee.html', {'employee': employee,'employee_types':employee_types,'concessions':concessions,
-                                                                               'specializations':specializations, 'species':species})
-        else:
-            messages.error(request, 'Employee not found!')
-            return redirect('employee_actions')
+            employee = dict(zip(columns, results[0]))
+            employee_data.append(employee)
+            
+        # ticket seller
+        ticket_query = '''SELECT shift FROM ticket_seller WHERE employee_id = (SELECT employee_id FROM employee WHERE emp_number = %s);''' 
+        result_ticket, success_ticket = execute_query(ticket_query,emp_number,query_type="SELECT")
+        if not success_ticket:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+        columns_ticket = ['shift']
+        for row in result_ticket:
+            ticket_sellers = dict(zip(columns_ticket, row)) 
+            employee_data[0].update(ticket_sellers)
 
+        
+        # customer service
+        customer_query = '''SELECT concession_id FROM customer_service WHERE employee_id = (SELECT employee_id FROM employee WHERE emp_number = %s);''' 
+        result_customer, success_customer = execute_query(customer_query,emp_number,query_type="SELECT")
+        if not success_customer:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+        columns_customer = ['concession_id']
+        for row in result_customer:
+            customer = dict(zip(columns_customer, row)) 
+            employee_data[0].update(customer)
+        
+        # Maintenance
+        maintenance_query = "SELECT specialization FROM maintenance WHERE employee_id = (SELECT employee_id FROM employee WHERE emp_number = %s);"
+        maintenance_result, success_Maintenance = execute_query(maintenance_query, emp_number, query_type="SELECT")
+        if not success_Maintenance:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+        columns_maintenance = ['specialization']
+        for row in maintenance_result:
+            maintenance_data = dict(zip(columns_maintenance, row))
+            employee_data[0].update(maintenance_data)
+        
+        #Veterinarians
+        veterinarian_query = """ SELECT v.license_number, v.degree, v.species_id, s.species_name FROM veterinarian v 
+        LEFT JOIN species s ON v.species_id = s.species_id WHERE v.employee_id = (SELECT employee_id FROM employee WHERE emp_number = %s); """
+        veterinarian_result, success_Veterinarians = execute_query(veterinarian_query, emp_number, query_type="SELECT")
+        if not success_Veterinarians:
+            messages.error(request, 'Failed to fetch employee types!')
+            return render(request, 'error.html')
+        columns_veterinarian = ['license_number', 'degree','specie_id', 'species_name']
+        for row in veterinarian_result:
+            veterinarian_data = dict(zip(columns_veterinarian, row))
+            employee_data[0].update(veterinarian_data) 
+
+        #Animal Care
+        act_query = """ SELECT  act.experience,act.species_id, s.species_name FROM animal_care_trainer_and_specialist act 
+                    LEFT JOIN species s ON act.species_id = s.species_id WHERE act.employee_id = (SELECT employee_id FROM employee WHERE emp_number = %s); """
+        act_result, success_act = execute_query(act_query, emp_number, query_type="SELECT")
+        if not success_act:
+                messages.error(request, 'Failed to fetch employee types!')
+                return render(request, 'error.html')
+        columns_act = [ 'experience', 'species_id', 'species_name']
+        for row in act_result:
+            act_data = dict(zip(columns_act, row))
+            employee_data[0].update(act_data)
+        
+        return render(request, 'asset_management/employee/edit_employee.html', {'employee_types':employee_types,'concessions':concessions,
+                                                                               'specializations':specializations, 'species':species,'employee_data':employee_data})
 
     elif request.method == 'POST':
         # Extract data from form submission
@@ -1237,7 +1295,7 @@ def delete_enclosure(request, enclosure_number):
 
 def show_actions(request):
     query = '''SELECT s.show_id, s.attraction_id, a.attraction_name, s.tickets_sold, s.status, s."date", s."Time", s.revenue
-    FROM "show" s JOIN attraction a ON s.attraction_id = a.attraction_id ORDER BY s."date" ASC, s."Time" ASC;'''
+    FROM "show" s JOIN attraction a ON s.attraction_id = a.attraction_id;'''
     results, success = execute_query(query, query_type='SELECT')
 
     if not success:
@@ -1632,7 +1690,6 @@ def add_species(request):
 
 def edit_species(request, species_id):
     if request.method == 'GET':
-        species_type = request.GET.get('species_type')
         query = "SELECT * FROM species WHERE species_id = %s;"
         results, success = execute_query(query, species_id, query_type='SELECT')
 
@@ -1647,39 +1704,50 @@ def edit_species(request, species_id):
             species.append(species_)
         
         # Retrieve additional information based species_type
-        if species_type == 'Bird':
-            bird_info_query = "SELECT feather_type, nesting_behaviour, migratory FROM bird WHERE species_id = %s"
-            bird_info_results, _ = execute_query(bird_info_query, species_id, query_type="SELECT")
-            columns_bird = ['feather_type','nesting_behaviour','migratory']
-            for row in bird_info_results:
-                bird_data =dict(zip(columns_bird,row))
-                species[0].update(bird_data)
-            
-        elif species_type == 'Mammal':
-            mammal_info_query = "SELECT fur_type, gestation_period FROM mammal WHERE species_id = %s"
-            mammal_info_results, _ = execute_query(mammal_info_query, species_id, query_type="SELECT")
-            columns_mammal = ['fur_type','gestation_period']
-            for row in mammal_info_results:
-                mammal_data = dict(zip(columns_mammal,row))
-                species[0].update(mammal_data)
-            
-        elif species_type == 'Reptile':
-            reptile_info_query = "SELECT scale_type, temperature_range, venomous FROM reptile WHERE species_id = %s"
-            reptile_info_results, _ = execute_query(reptile_info_query, species_id, query_type="SELECT")
-            columns_reptile = ['scale_type','temperature_range','venomous']
-            for row in reptile_info_results:
-                reptile_data = dict(zip(columns_reptile,row))
-                species[0].update(reptile_data)
         
-        elif species_type == 'Aquatic':
-            aquatic_info_query = "SELECT finned_type, average_length FROM aquatic WHERE species_id = %s"
-
-            aquatic_info_results, _ = execute_query(aquatic_info_query, species_id, query_type="SELECT")
-            columns_aquatic = ['finned_type','average_length']
-            for row in aquatic_info_results:
-                aquatic_data = dict(zip(columns_aquatic,row))
-                species[0].update(aquatic_data)
+        bird_info_query = "SELECT feather_type, nesting_behaviour, migratory FROM bird WHERE species_id = %s"
+        bird_info_results, _ = execute_query(bird_info_query, species_id, query_type="SELECT")
+        if not success:
+            messages.error(request, "Failed to load species details.")
+            return render(request, 'error.html')
+        columns_bird = ['feather_type','nesting_behaviour','migratory']
+        for row in bird_info_results:
+            bird_data =dict(zip(columns_bird,row))
+            species[0].update(bird_data)
+            
         
+        mammal_info_query = "SELECT fur_type, gestation_period FROM mammal WHERE species_id = %s"
+        mammal_info_results, _ = execute_query(mammal_info_query, species_id, query_type="SELECT")
+        if not success:
+            messages.error(request, "Failed to load species details.")
+            return render(request, 'error.html')
+        columns_mammal = ['fur_type','gestation_period']
+        for row in mammal_info_results:
+            mammal_data = dict(zip(columns_mammal,row))
+            species[0].update(mammal_data)
+            
+        
+        reptile_info_query = "SELECT scale_type, temperature_range, venomous FROM reptile WHERE species_id = %s"
+        reptile_info_results, _ = execute_query(reptile_info_query, species_id, query_type="SELECT")
+        if not success:
+            messages.error(request, "Failed to load species details.")
+            return render(request, 'error.html')
+        columns_reptile = ['scale_type','temperature_range','venomous']
+        for row in reptile_info_results:
+            reptile_data = dict(zip(columns_reptile,row))
+            species[0].update(reptile_data)
+        
+        
+        aquatic_info_query = "SELECT finned_type, average_length FROM aquatic WHERE species_id = %s"
+        aquatic_info_results, _ = execute_query(aquatic_info_query, species_id, query_type="SELECT")
+        if not success:
+            messages.error(request, "Failed to load species details.")
+            return render(request, 'error.html')
+        columns_aquatic = ['fin_type','average_length']
+        for row in aquatic_info_results:
+            aquatic_data = dict(zip(columns_aquatic,row))
+            species[0].update(aquatic_data)
+    
 
         return render(request, 'asset_management/species/edit_species.html', {'species': species})
 

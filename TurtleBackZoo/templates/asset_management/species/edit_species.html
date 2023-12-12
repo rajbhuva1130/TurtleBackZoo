@@ -13,8 +13,7 @@
 {% block content %}
 <div class="container">
     {% for species in species %}
-    <h1>Edit Species: </h1>
-    <h2>Species Name: {{ species.species_name }}</h2>
+    <h1>Edit Species: {{ species.species_name }}</h1>
     
     <form action="{% url 'edit_species' species.species_id %}" method="post">
         {% csrf_token %}
@@ -42,54 +41,72 @@
         </select>
     
 
-        <!-- Additional Fields div -->
-        <div id="additionalFields" >
-        </div>
+        <!-- Bird Section -->
+    <div id="Bird" class="species-section">
+        <label for="feather_type">Feather Type:</label>
+        <input type="text" id="feather_type" name="feather_type" value="{{ species.feather_type }}">
+
+        <label for="nesting_behaviour">Nesting Behaviour:</label>
+        <input type="text" id="nesting_behaviour" name="nesting_behaviour" value="{{ species.nesting_behaviour }}">
+
+        <label for="migratory">Migratory:</label>
+        <input type="checkbox" id="migratory" name="migratory" {% if species.migratory %} checked {% endif %}>
+    </div>
+
+    <!-- Mammal Section -->
+    <div id="Mammal" class="species-section">
+        <label for="fur_type">Fur Type:</label>
+        <input type="text" id="fur_type" name="fur_type" value="{{ species.fur_type }}">
+
+        <label for="gestation_period">Gestation Period:</label>
+        <input type="number" id="gestation_period" name="gestation_period" value="{{ species.gestation_period }}">
+    </div>
+
+    <!-- Reptile Section -->
+    <div id="Reptile" class="species-section">
+        <label for="scale_type">Scale Type:</label>
+        <input type="text" id="scale_type" name="scale_type" value="{{ species.scale_type }}">
+
+        <label for="temperature_range">Temperature Range:</label>
+        <input type="text" id="temperature_range" name="temperature_range" value="{{ species.temperature_range }}">
+
+        <label for="venomous">Venomous:</label>
+        <input type="checkbox" id="venomous" name="venomous" {% if species.venomous %} checked {% endif %}>
+    </div>
+
+    <!-- Aquatic Section -->
+    <div id="Aquatic" class="species-section">
+        <label for="fin_type">Fin Type:</label>
+        <input type="text" id="fin_type" name="fin_type" value="{{ species.fin_type }}">
+
+        <label for="average_length">Average Length:</label>
+        <input type="number" id="average_length" name="average_length" value="{{ species.average_length }}">
+    </div>
+
         <button type="submit" class="btn btn-primary">Update</button>
     </form>
     {% endfor %}
 </div>
+
 <script>
+    function toggleSpeciesSections() {
+        var selectElement = document.getElementById('species_type');
+        var selectedType = selectElement.options[selectElement.selectedIndex].value;
     
-    function updateSpeciesTypeFields(species) {
-        const speciesSelect = document.getElementById('species_type');
-        const fieldsDiv = document.getElementById('additionalFields');
-        const selectedType = speciesSelect.options[speciesSelect.selectedIndex].getAttribute('data-type');
+        var sections = document.querySelectorAll('.species-section');
+        sections.forEach(function(section) {
+            section.style.display = 'none';
+        });
     
-        fieldsDiv.innerHTML = ''; // Clear existing fields
-    
-        if (selectedType === 'Bird') {
-            fieldsDiv.innerHTML += `<label for="feather_type">Feather Type:</label><input type="text" id="feather_type" name="feather_type" value="${species.feather_type || ''}"> `;
-            fieldsDiv.innerHTML += `<label for="nesting_behaviour">Nesting Behaviour:</label><input type="text" id="nesting_behaviour" name="nesting_behaviour" value="${species.nesting_behaviour || ''}"> `;
-            fieldsDiv.innerHTML += `<label for="migratory">Migratory:</label><input type="checkbox" id="migratory" name="migratory" ${species.migratory ? 'checked' : ''}> `;
-        } else if (selectedType === 'Mammal') {
-            fieldsDiv.innerHTML += `<label for="fur_type">Fur Type:</label><input type="text" id="fur_type" name="fur_type" value="${species.fur_type || ''}"> `;
-            fieldsDiv.innerHTML += `<label for="gestation_period">Gestation Period:</label><input type="number" step="0.01" id="gestation_period" name="gestation_period" value="${species.gestation_period || ''}"min="0" required> `;
-        } else if (selectedType === 'Reptile') {
-            fieldsDiv.innerHTML += `<label for="scale_type">Scale Type:</label><input type="text" id="scale_type" name="scale_type" value="${species.scale_type || ''}"> `;
-            fieldsDiv.innerHTML += `<label for="temperature_range">Temperature Range:</label><input type="text" id="temperature_range" name="temperature_range" value="${species.temperature_range || ''}"> `;
-            fieldsDiv.innerHTML += `<label for="venomous">Venomous:</label><input type="checkbox" id="venomous" name="venomous" ${species.venomous ? 'checked' : ''}> `;
-        } else if (selectedType === 'Aquatic') {
-            fieldsDiv.innerHTML += `<label for="finned_type">Finned Type:</label><input type="text" id="finned_type" name="finned_type" value="${species.finned_type || ''}"> `;
-            fieldsDiv.innerHTML += `<label for="average_length">Average Length:</label><input type="number" id="average_length" name="average_length" value="${species.average_length || ''}" min="0" required> `;
+        var selectedSection = document.getElementById(selectedType);
+        if (selectedSection) {
+            selectedSection.style.display = 'block';
         }
-        // Add any other species types as needed.
     }
     
-    // Define the currentSpeciesData object with the actual values for the species.
-    // This should be populated with data provided by your server-side code.
-    const currentSpeciesData = {
-        
-    };
-    
-    document.addEventListener('DOMContentLoaded', function() {
-        updateSpeciesTypeFields(currentSpeciesData);
-    
-        // Also update fields when the species type is changed.
-        document.getElementById('species_type').addEventListener('change', function() {
-            updateSpeciesTypeFields(currentSpeciesData);
-        });
-    });
+    document.getElementById('species_type').addEventListener('change', toggleSpeciesSections);
+    window.addEventListener('load', toggleSpeciesSections);
     
 </script>
+
 {% endblock %}
