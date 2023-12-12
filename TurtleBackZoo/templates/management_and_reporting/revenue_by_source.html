@@ -24,14 +24,14 @@
 
         <!-- Displaying Revenue Data (if available) -->
         {% if selected_date %}
-            <h2>Revenue for {{ selected_date }}</h2>
+            <h2>Revenue for {{ selected_date }} : $ {{ total_revenue }} </h2>
 
-            <h3>Attractions Revenue</h3>
+            <h3>Attractions Revenue : $ {{ attractions_total_revenue }} </h3>
             <table class="table">
                 <thead>
                     <tr>
                         <th>Attraction Name</th>
-                        <th>Total Revenue</th>
+                        <th>Sub totals</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -44,12 +44,12 @@
                 </tbody>
             </table>
 
-            <h3>Concessions Revenue</h3>
+            <h3>Concessions Revenue : $ {{ concessions_total_revenue }} </h3>
             <table class="table">
                 <thead>
                     <tr>
                         <th>Concession Name</th>
-                        <th>Total Revenue</th>
+                        <th>Sub totals</th>
                     </tr>
                 </thead>
                 <tbody>

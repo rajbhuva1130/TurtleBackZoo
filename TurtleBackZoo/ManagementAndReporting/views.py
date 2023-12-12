@@ -26,53 +26,6 @@ def managementandreporting_home(request):
 
 def animal_reports(request):
 
-    # query = '''
-    # SELECT 
-    # sp.species_name,
-    # COALESCE(an_status.number_healthy, 0) AS number_healthy,
-    # COALESCE(an_status.number_medical_care, 0) AS number_medical_care,
-    # COALESCE(an_status.maternal_leave, 0) AS maternal_leave,
-    # COALESCE(an_status.number_newborn, 0) AS number_newborn,
-    # sp.monthly_food_cost AS monthly_cost_per_animal,
-    # sp.monthly_food_cost * COALESCE(an_status.total_animals, 0) AS total_monthly_food_cost,
-    # vet_counts.total_employees AS number_of_vets,
-    # vet_counts.hourly_rate AS vet_cost_per_hour,
-    # vet_counts.total_cost AS total_vet_cost_per_month,
-    # COUNT(DISTINCT acs.employee_id) AS number_of_care_staff,
-    # SUM(CASE WHEN et.employee_type = 'Animal Care' THEN et.rate ELSE 0 END) AS acs_cost_per_hour,
-    # SUM(CASE WHEN et.employee_type = 'Animal Care' THEN et.rate * 160 ELSE 0 END) AS total_acs_cost_per_month
-    # FROM 
-    #     species sp
-    # LEFT JOIN 
-    #     (SELECT 
-    #         species_id,
-    #         COUNT(CASE WHEN status = 'Healthy' THEN 1 END) AS number_healthy,
-    #         COUNT(CASE WHEN status = 'Medical Care' THEN 1 END) AS number_medical_care,
-    #         COUNT(CASE WHEN status = 'Maternal Leave' THEN 1 END) AS maternal_leave,
-    #         COUNT(CASE WHEN status = 'New Born' THEN 1 END) AS number_newborn,
-    #         COUNT(CASE WHEN status IN ('Healthy', 'Medical Care', 'Maternal Leave', 'New Born') THEN 1 END) AS total_animals
-    #     FROM animals 
-    #     GROUP BY species_id) an_status ON sp.species_id = an_status.species_id
-    # LEFT JOIN 
-    #     (SELECT s.species_id, 
-    #             COUNT(v.employee_id) AS total_employees,
-    #             et.rate * COUNT(v.employee_id) AS hourly_rate,
-    #             COUNT(v.employee_id) * et.rate * 160 AS total_cost
-    #     FROM species s
-    #     LEFT JOIN veterinarian v ON s.species_id = v.species_id
-    #     LEFT JOIN employee_type et ON et.employee_type = 'Veterinarians'
-    #     GROUP BY s.species_id, et.rate) vet_counts ON sp.species_id = vet_counts.species_id
-    # LEFT JOIN 
-    #     animal_care_trainer_and_specialist acs ON sp.species_id = acs.species_id
-    # LEFT JOIN 
-    #     employee e ON acs.employee_id = e.employee_id
-    # LEFT JOIN 
-    #     employee_type et ON e.employee_type_id = et.employee_type_id
-    # GROUP BY 
-    #     sp.species_name, sp.monthly_food_cost, an_status.number_healthy, an_status.number_medical_care, an_status.maternal_leave, an_status.number_newborn, an_status.total_animals, vet_counts.total_employees, vet_counts.hourly_rate, vet_counts.total_cost
-    # ORDER BY 
-    #     sp.species_name;
-    # '''
     query = '''
     SELECT 
     sp.species_name,
@@ -334,11 +287,37 @@ def revenue_by_source(request):
         concessions = [dict(zip(columns_con, row)) for row in concessions_re]
 
 
+        query_total_attractions_revenue = ''' 
+        SELECT SUM(unit_price * ncount) AS total_revenue
+        FROM "transaction" t
+        WHERE DATE(t.time_stamp) = %s
+        AND t.transaction_type = 'Attraction';
+        '''
+
+        attractions_total_revenue_result, success_attractions_total_revenue = execute_query(query_total_attractions_revenue, selected_date, query_type="SELECT")
+        attractions_total_revenue = attractions_total_revenue_result[0][0]
+        
+        query_total_concessions_revenue = ''' 
+        SELECT SUM(unit_price * ncount) AS total_revenue
+        FROM "transaction" t
+        WHERE DATE(t.time_stamp) = %s
+        AND t.transaction_type = 'Concession';
+        '''
+
+        concessions_total_revenue_result, success_concessions_total_revenue = execute_query(query_total_concessions_revenue, selected_date, query_type="SELECT")
+        concessions_total_revenue = concessions_total_revenue_result[0][0]
+
+        total_revenue = float(attractions_total_revenue) +float(concessions_total_revenue)
+
+
         if success_attractions and success_concessions:
             return render(request, 'management_and_reporting/revenue_by_source.html', {
                 'selected_date': selected_date, 
                 'attractions': attractions,
-                'concessions': concessions 
+                'concessions': concessions,
+                'attractions_total_revenue':attractions_total_revenue, 
+                'concessions_total_revenue':concessions_total_revenue,
+                'total_revenue':total_revenue 
             })
         else:
             # Handle database query failure

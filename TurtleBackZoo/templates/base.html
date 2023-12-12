@@ -36,13 +36,17 @@
 
        
         .container {
-            margin: 50px 30px;
+            margin: auto;
             padding: 20px;
             border: 1px solid #ccc;
             border-radius: 4px;
             background-color: #f4f4f4;
-            overflow: scroll;
+            width: 80%;
+            overflow: hidden;
+            margin-top: 2%;
         }
+
+
 
         .container.home {
             width: 300px;
@@ -79,11 +83,13 @@
 
         .form-group {
             margin: 15px 0;
+            
         }
 
         .form-group label {
             display: block;
             text-align: left;
+            margin-bottom: 15px;
         }
 
         .form-group input {
@@ -121,6 +127,45 @@
         }
         .header h1 {
             margin: 0;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 50px;
+            margin-bottom: 20px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        ul li {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        ul li a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            transition: all 0.3s;
+        }
+
+        ul li a:hover {
+            background-color: #1b03f2;
+            color: #fff;
         }
     </style>
 </head>

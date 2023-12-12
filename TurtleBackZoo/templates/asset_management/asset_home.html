@@ -1,29 +1,33 @@
 {% extends "base.html" %}
 
 {% block content %}
-<html>
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asset Page</title>
+
 </head>
 <body>
     <div class="container home">
-            <h1>Asset Management</h1>
-            <ul>
-                <li><a href="{% url 'building_actions' %}">Building</a></li>
-                <li><a href="{% url 'employee_actions' %}">Employees</a></li>
-                <li><a href="{% url 'hourly_wages_actions' %}">Hourly Wages</a></li>
-                <li><a href="{% url 'attraction_actions' %}">Attractions</a></li>
-                <li><a href="{% url 'concession_actions' %}">Concession</a></li>
-                <li><a href="{% url 'animal_actions' %}">Animal</a></li>
-                <li><a href="{% url 'enclosure_actions' %}">Enclosure</a></li>
-                <li><a href="{% url 'show_actions' %}">Show</a></li>
-                <li><a href="{% url 'product_actions' %}">Product</a></li>
-                <li><a href="{% url 'species_actions' %}">Species</a></li>
-                <li><a href="{% url 'ticket_actions' %}">Ticket</a></li>
-                
-            </ul>
+        <h1>Asset Management</h1>
+        <ul>
+            <li><a href="{% url 'building_actions' %}">Building</a></li>
+            <li><a href="{% url 'employee_actions' %}">Employees</a></li>
+            <li><a href="{% url 'hourly_wages_actions' %}">Hourly Wages</a></li>
+            <li><a href="{% url 'attraction_actions' %}">Attractions</a></li>
+            <li><a href="{% url 'concession_actions' %}">Concession</a></li>
+            <li><a href="{% url 'animal_actions' %}">Animal</a></li>
+            <li><a href="{% url 'enclosure_actions' %}">Enclosure</a></li>
+            <li><a href="{% url 'show_actions' %}">Show</a></li>
+            <li><a href="{% url 'product_actions' %}">Product</a></li>
+            <li><a href="{% url 'species_actions' %}">Species</a></li>
+            <li><a href="{% url 'ticket_actions' %}">Ticket</a></li>
+        </ul>
     </div>
 </body>
 </html>
 
-{% endblock %}
+{% endblock %}
