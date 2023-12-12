@@ -15,13 +15,13 @@
         
         <form action="{% url 'top_three_attractions' %}" method="post">
             {% csrf_token %}
-            <div class="row mb-3">
-                <div class="col">
-                    <label for="start_date">Start Date:</label>
+            <div class="row mb-3" >
+                <div class="col"  style="margin-bottom: 15px;">
+                    <label for="start_date"  style="margin-bottom: 15px;">Start Date:</label>
                     <input type="date" id="start_date" name="start_date" class="form-control" required>
                 </div>
-                <div class="col">
-                    <label for="end_date">End Date:</label>
+                <div class="col"  style="margin-bottom: 15px;">
+                    <label for="end_date"  style="margin-bottom: 15px;">End Date:</label>
                     <input type="date" id="end_date" name="end_date" class="form-control" required>
                 </div>
             </div>

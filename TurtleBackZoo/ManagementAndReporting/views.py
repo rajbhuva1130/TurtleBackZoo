@@ -25,7 +25,9 @@ def managementandreporting_home(request):
     return render(request,'home.html',{'name':'managementandreporting_home'})
 
 def animal_reports(request):
-    query = '''SELECT 
+
+    query = '''
+    SELECT 
     sp.species_name,
     COALESCE(an_status.number_healthy, 0) AS number_healthy,
     COALESCE(an_status.number_medical_care, 0) AS number_medical_care,
@@ -33,12 +35,12 @@ def animal_reports(request):
     COALESCE(an_status.number_newborn, 0) AS number_newborn,
     sp.monthly_food_cost AS monthly_cost_per_animal,
     sp.monthly_food_cost * COALESCE(an_status.total_animals, 0) AS total_monthly_food_cost,
-    COUNT(DISTINCT vet.employee_id) AS number_of_vets,
-    SUM(CASE WHEN et.employee_type = 'Veterinarians' THEN et.rate ELSE 0 END) AS vet_cost_per_hour,
-    SUM(CASE WHEN et.employee_type = 'Veterinarians' THEN et.rate * 160 ELSE 0 END) AS total_vet_cost_per_month,
+    COALESCE(vet_counts.total_employees, 0) AS number_of_vets,
+    COALESCE(vet_counts.hourly_rate, 0) AS vet_cost_per_hour,
+    COALESCE(vet_counts.total_cost, 0) AS total_vet_cost_per_month,
     COUNT(DISTINCT acs.employee_id) AS number_of_care_staff,
-    SUM(CASE WHEN et.employee_type = 'Animal Care' THEN et.rate ELSE 0 END) AS acs_cost_per_hour,
-    SUM(CASE WHEN et.employee_type = 'Animal Care' THEN et.rate * 160 ELSE 0 END) AS total_acs_cost_per_month
+    COALESCE(care_counts.hourly_rate, 0) AS acs_cost_per_hour,
+    COALESCE(care_counts.total_cost, 0) AS total_acs_cost_per_month
     FROM 
         species sp
     LEFT JOIN 
@@ -52,18 +54,38 @@ def animal_reports(request):
         FROM animals 
         GROUP BY species_id) an_status ON sp.species_id = an_status.species_id
     LEFT JOIN 
-        veterinarian vet ON sp.species_id = vet.species_id
+        (SELECT s.species_id, 
+                COUNT(v.employee_id) AS total_employees,
+                et.rate * COUNT(v.employee_id) AS hourly_rate,
+                COUNT(v.employee_id) * et.rate * 160 AS total_cost
+        FROM species s
+        LEFT JOIN animal_care_trainer_and_specialist v ON s.species_id = v.species_id
+        LEFT JOIN employee_type et ON et.employee_type = 'Animal Care'
+        GROUP BY s.species_id, et.rate) care_counts ON sp.species_id = care_counts.species_id
+    LEFT JOIN 
+        (SELECT s.species_id, 
+                COUNT(v.employee_id) AS total_employees,
+                et.rate * COUNT(v.employee_id) AS hourly_rate,
+                COUNT(v.employee_id) * et.rate * 160 AS total_cost
+        FROM species s
+        LEFT JOIN veterinarian v ON s.species_id = v.species_id
+        LEFT JOIN employee_type et ON et.employee_type = 'Veterinarians'
+        GROUP BY s.species_id, et.rate) vet_counts ON sp.species_id = vet_counts.species_id
     LEFT JOIN 
         animal_care_trainer_and_specialist acs ON sp.species_id = acs.species_id
     LEFT JOIN 
-        employee e ON vet.employee_id = e.employee_id OR acs.employee_id = e.employee_id
+        employee e ON acs.employee_id = e.employee_id
     LEFT JOIN 
         employee_type et ON e.employee_type_id = et.employee_type_id
     GROUP BY 
-        sp.species_name, sp.monthly_food_cost, an_status.number_healthy, an_status.number_medical_care, an_status.maternal_leave, an_status.number_newborn, an_status.total_animals
+        sp.species_name, sp.monthly_food_cost, an_status.number_healthy, an_status.number_medical_care, an_status.maternal_leave, an_status.number_newborn, an_status.total_animals, vet_counts.total_employees, vet_counts.hourly_rate, vet_counts.total_cost, care_counts.hourly_rate, care_counts.total_cost
     ORDER BY 
-        sp.species_name;'''
+        sp.species_name;
 
+
+
+
+    '''
     results, success = execute_query(query, query_type='SELECT')
 
     if not success:
@@ -98,7 +120,7 @@ def top_three_attractions(request):
             INNER JOIN 
                 attraction a ON s.attraction_id = a.attraction_id
             WHERE 
-                s."date" BETWEEN %s AND %s 
+                a.attraction_name != 'Zoo'  AND s."date" BETWEEN %s AND %s 
             GROUP BY 
                 a.attraction_name
             ORDER BY 
@@ -162,10 +184,24 @@ def five_best_days(request):
     return render(request, 'management_and_reporting/five_best_days.html')
 
 def average_revenue(request):
+    if request.method == 'GET':
+        return render(request, 'management_and_reporting/average_revenue.html')
+     
+    if request.method == 'POST':
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+
+        # Ensure both dates are provided
+        if not start_date or not end_date:
+            messages.error(request, "Please provide both start and end dates.")
+            return render(request, 'management_and_reporting/top_three_attractions.html')
+
     query = ''' SELECT a.attraction_name, AVG(s.revenue) AS average_revenue 
-    FROM attraction a INNER JOIN "show" s ON a.attraction_id = s.attraction_id GROUP BY a.attraction_name; '''
+    FROM attraction a INNER JOIN "show" s ON a.attraction_id = s.attraction_id
+    WHERE s."date" BETWEEN %s AND %s
+    GROUP BY a.attraction_name; '''
     
-    results, success = execute_query(query, query_type='SELECT')
+    results, success = execute_query(query,start_date, end_date ,query_type='SELECT')
 
     if not success:
         messages.error(request, "Failed to load information.")
@@ -181,9 +217,10 @@ def average_revenue(request):
         transaction_concession tc ON c.concession_id = tc.concession_id
     INNER JOIN 
         transaction tr ON tc.transaction_id = tr.transaction_id
+    WHERE DATE(tr.time_stamp) BETWEEN %s AND %s
     GROUP BY 
         c.concession_name;'''
-    results_concession_revenues, success_concession_revenues = execute_query(query_concession_revenues, query_type='SELECT')
+    results_concession_revenues, success_concession_revenues = execute_query(query_concession_revenues,start_date, end_date , query_type='SELECT')
 
     if not success:
         messages.error(request, "Failed to load information.")
@@ -196,8 +233,9 @@ def average_revenue(request):
     s.tickets_sold AS total_attendance
     FROM "show" s
     INNER JOIN attraction a ON s.attraction_id = a.attraction_id
+    WHERE s."date" BETWEEN %s AND %s
     ORDER BY s."date", s."Time";'''
-    results_total_attendance, success_total_attendance = execute_query(query_total_attendance, query_type='SELECT')
+    results_total_attendance, success_total_attendance = execute_query(query_total_attendance,start_date, end_date , query_type='SELECT')
 
     if not success:
         messages.error(request, "Failed to load information.")
@@ -208,7 +246,8 @@ def average_revenue(request):
     context = {
             'attraction_revenues': attraction_revenues,
             'concession_revenues':concession_revenues,
-            'total_attendance': total_attendance
+            'total_attendance': total_attendance,
+            'average_revenues':attraction_revenues
         }
 
     return render(request, 'management_and_reporting/average_revenue.html',context)
@@ -265,11 +304,39 @@ def revenue_by_source(request):
         concessions = [dict(zip(columns_con, row)) for row in concessions_re]
 
 
+        query_total_attractions_revenue = ''' 
+        SELECT SUM(unit_price * ncount) AS total_revenue
+        FROM "transaction" t
+        WHERE DATE(t.time_stamp) = %s
+        AND t.transaction_type = 'Attraction';
+        '''
+
+        attractions_total_revenue_result, success_attractions_total_revenue = execute_query(query_total_attractions_revenue, selected_date, query_type="SELECT")
+        attractions_total_revenue = attractions_total_revenue_result[0][0]
+        
+        query_total_concessions_revenue = ''' 
+        SELECT SUM(unit_price * ncount) AS total_revenue
+        FROM "transaction" t
+        WHERE DATE(t.time_stamp) = %s
+        AND t.transaction_type = 'Concession';
+        '''
+
+        concessions_total_revenue_result, success_concessions_total_revenue = execute_query(query_total_concessions_revenue, selected_date, query_type="SELECT")
+        concessions_total_revenue = concessions_total_revenue_result[0][0]
+
+        if attractions_total_revenue != None and concessions_total_revenue != None:
+            total_revenue = float(attractions_total_revenue) +float(concessions_total_revenue)
+        else:
+            total_revenue = 0
+
         if success_attractions and success_concessions:
             return render(request, 'management_and_reporting/revenue_by_source.html', {
                 'selected_date': selected_date, 
                 'attractions': attractions,
-                'concessions': concessions 
+                'concessions': concessions,
+                'attractions_total_revenue':attractions_total_revenue, 
+                'concessions_total_revenue':concessions_total_revenue,
+                'total_revenue':total_revenue 
             })
         else:
             # Handle database query failure

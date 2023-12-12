@@ -19,29 +19,25 @@
                 <label for="dateInput">Select Date:</label>
                 <input type="date" id="dateInput" name="selected_date" class="form-control" required>
             </div>
-            <button type="submit" class="btn btn-primary">Show Transactions</button>
+            <button type="submit" class="btn btn-primary">Show Activity </button>
         </form>
 
         <!-- Displaying Transactions (if available) -->
         {% if daily_zoo or daily_zoo_con %}
             {% if daily_zoo %}
-                <h2>Transactions for Attration</h2>
+                <h2>Attrations</h2>
                 <table class="table">
                     <thead>
                         <tr>
                             <th>Show Name</th>
-                            <th>Timestamp</th>
-                            <th>Unit Price</th>
-                            <th>Count</th>
-                            <th>Transaction Total</th>
+                            <th>Attendance </th>
+                            <th>Revenue </th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for transaction in daily_zoo %}
                             <tr>
                                 <td>{{ transaction.show_name }}</td>
-                                <td>{{ transaction.time_stamp }}</td>
-                                <td>{{ transaction.unit_price }}</td>
                                 <td>{{ transaction.ncount }}</td>
                                 <td>{{ transaction.total_cost }}</td>
                             </tr>
@@ -50,27 +46,53 @@
                 </table>
             {% endif %}
             {% if daily_zoo_con%}
-            <h2>Transactions for Concession</h2>
+            <h2>Concessions</h2>
             <table class="table">
                 <thead>
                     <tr>
                         <th>Concession Name</th>
-                        <th>Product Name</th>
-                        <th>Timestamp</th>
-                        <th>Unit Price</th>
-                        <th>Count</th>
-                        <th>Transaction Total</th>
+                        <th>Revenue </th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for transaction in daily_zoo_con %}
                         <tr>
                             <td>{{ transaction.concession_name }}</td>
-                            <td>{{ transaction.product_name }}</td>
-                            <td>{{ transaction.time_stamp }}</td>
-                            <td>{{ transaction.unit_price }}</td>
-                            <td>{{ transaction.ncount }}</td>
                             <td>{{ transaction.total_cost }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <h2> </h2>
+            <h2>Attendance</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Attendee type</th>
+                        <th> Numbers </th>
+                        <th>Revenue </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for adult in daily_adult_entry %}
+                        <tr>
+                            <td> Adults </td>
+                            <td>{{ adult.attendance }}</td>
+                            <td>{{ adult.revenue }}</td>
+                        </tr>
+                    {% endfor %}
+                    {% for senior in daily_senior_entry %}
+                        <tr>
+                            <td> Seniors </td>
+                            <td>{{ senior.attendance }}</td>
+                            <td>{{ senior.revenue }}</td>
+                        </tr>
+                    {% endfor %}
+                    {% for child in daily_child_entry %}
+                        <tr>
+                            <td> Childrens </td>
+                            <td>{{ child.attendance }}</td>
+                            <td>{{ child.revenue }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

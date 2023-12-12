@@ -1237,7 +1237,7 @@ def delete_enclosure(request, enclosure_number):
 
 def show_actions(request):
     query = '''SELECT s.show_id, s.attraction_id, a.attraction_name, s.tickets_sold, s.status, s."date", s."Time", s.revenue
-    FROM "show" s JOIN attraction a ON s.attraction_id = a.attraction_id;'''
+    FROM "show" s JOIN attraction a ON s.attraction_id = a.attraction_id ORDER BY s."date" ASC, s."Time" ASC;'''
     results, success = execute_query(query, query_type='SELECT')
 
     if not success:
