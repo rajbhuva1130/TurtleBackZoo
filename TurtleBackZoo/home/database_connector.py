@@ -29,26 +29,3 @@ def execute_query(query, *args, query_type="SELECT"):
                 else:
                     return 0, False  # Return failure flag if no rows were affected
 
-# Add more functions as needed to perform different operations on the database
-
-#################################################################################
-# # Example usage for a SELECT query
-# rows, success = execute_query("SELECT * FROM table_name", query_type="SELECT")
-# if success:
-#     # Process fetched rows
-#     for row in rows:
-#         print(row)
-# else:
-#     print("Query execution failed")
-
-# # Example usage for an UPDATE query
-# rows_affected, success = execute_query("UPDATE table_name SET column = %s WHERE condition = %s", value1, value2, query_type="UPDATE")
-# if success:
-#     if rows_affected > 0:
-#         print(f"{rows_affected} rows updated successfully")
-#     else:
-#         print("No rows were updated")
-# else:
-#     print("Query execution failed")
-
-##############################################################################################################

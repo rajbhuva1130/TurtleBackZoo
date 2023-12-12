@@ -56,7 +56,7 @@ def dailyzooacitvity_home(request):
         
         columns_con = ['transaction_id','concession_id','product_id','time_stamp','unit_price','ncount','transaction_type','concession_name','product_name','total_cost']
         daily_zoo_con = [dict(zip(columns_con, row)) for row in results_con]
-        print("-----\n\n daily_zoo_con:",daily_zoo_con,"\n\n-----")
+        
         
     return render(request, 'daily_zoo_activity/daily_home.html', {'daily_zoo':daily_zoo,'daily_zoo_con':daily_zoo_con})
 

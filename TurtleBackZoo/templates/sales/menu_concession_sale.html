@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <form method="post" action="{% url 'process_transaction' %}">
-<h1>Concessions menu for concession id : {{ concession_id }}</h1>
+
 
     {% csrf_token %}
     <div class="container">
@@ -18,7 +18,7 @@
                 <tr>
                     <td>{{ product.product_name }}</td>
                     <td>${{ product.price }}</td>
-                    <td><input type="number" name="product_{{ product.product_id }}_{{ product.price }}" min="0"></td>
+                    <td><input type="number" name="product_{{ product.product_id }}_{{ product.price }}" min="0" required></td>
                 </tr>
             {% endfor %}
         </tbody>

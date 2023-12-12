@@ -23,7 +23,7 @@
         <input type="text" id="employee_type" name="employee_type" class="form-control" value="{{ employee_type.employee_type }}" required>
     
         <label for="rate">Hourly Rate:</label>
-        <input type="number" id="rate" name="rate" class="form-control" step="0.01" value="{{ employee_type.rate }}" required>
+        <input type="number" id="rate" name="rate" class="form-control" step="0.01" value="{{ employee_type.rate }}" min="0" required>
         
         <input type="hidden" name="employee_type_id" value="{{ employee_type.employee_type_id }}">
         <button type="submit" class="btn btn-primary">Update</button>

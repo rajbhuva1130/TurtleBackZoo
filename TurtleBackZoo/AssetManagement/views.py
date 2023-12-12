@@ -597,7 +597,6 @@ def edit_employee(request, emp_number):
                 # <!-- Customer Service Section -->
                 elif employee_type == 'Customer Service':  
                     concession_id = request.POST.get('concession_id')
-                    print('------------\n\n concession_id:',concession_id,'\n\n-----------')
                     query_insert_customer_service = '''INSERT INTO customer_service (employee_id, concession_id) 
                     VALUES ((SELECT employee_id FROM employee WHERE emp_number = %s), %s)'''
                     success_ = execute_query(query_insert_customer_service, emp_number, concession_id, query_type="INSERT")
@@ -771,41 +770,35 @@ def add_attraction(request):
         
         return render(request, 'asset_management/attraction/add_attraction.html', {'buildings': buildings, 'species': species})
         
-    
     if request.method == 'POST':
         attraction_name = request.POST.get('attraction_name')
         seats = request.POST.get('seats')
         building_id = request.POST.get('building_id')
 
         # Inserting a new attraction
-        query_insert = "INSERT INTO attraction (attraction_name, seats, building_id) VALUES (%s, %s, %s)"
-        success = execute_query(query_insert, attraction_name, seats, building_id, query_type="INSERT")
+        query_insert = "INSERT INTO attraction (attraction_name, seats, building_id) VALUES (%s, %s, %s);"
+        results, success = execute_query(query_insert, attraction_name, seats, building_id,query_type="INSERT")
+        
+        if not success:
+            messages.error(request, 'Failed to add attraction!')
+            return render(request, 'asset_management/attraction/add_attraction.html')
+        
+        query_att_id = "SELECT attraction_id FROM attraction WHERE attraction_name = %s;"
+        attraction_id_results, _ = execute_query(query_att_id,attraction_name,query_type="SELECT")
 
         if not success:
             messages.error(request, 'Failed to add attraction!')
             return render(request, 'asset_management/attraction/add_attraction.html')
 
-        # Retrieve species and quantity for the requirement
-        species_id = request.POST.get('species_id')
-        quantity = request.POST.get('quantity')
-        
-        #get attraction_id from attraction_name
-        get_attraction_id_query = "SELECT attraction_id FROM attraction WHERE attraction_name = %s;"
-        attraction_id_results, attraction_id_success = execute_query(get_attraction_id_query, attraction_name, query_type="SELECT")
-        if not attraction_id_success:
-            messages.error(request, 'Failed to find attraction!')
-            return render(request, 'asset_management/attraction/add_attraction.html')
         attraction_id = attraction_id_results[0][0]
-        
 
-        # Add the requirement to the database
-        requirement_insert_query = "INSERT INTO attraction_requirement (attraction_id, species_id, quantity) VALUES (%s, %s, %s);"
-        req_success = execute_query(requirement_insert_query, attraction_id, species_id, quantity, query_type="INSERT")
+        # Retrieve and process multiple species and quantities
+        species_ids = request.POST.getlist('species_id[]')
+        quantities = request.POST.getlist('quantity[]')
 
-        if not req_success:
-            delete_attraction(attraction_name)
-            messages.error(request, 'Failed to add attraction requirement!')
-            return render(request, 'asset_management/attraction/add_attraction.html')
+        for species_id, quantity in zip(species_ids, quantities):
+            requirement_insert_query = "INSERT INTO attraction_requirement (attraction_id, species_id, quantity) VALUES (%s, %s, %s);"
+            execute_query(requirement_insert_query, attraction_id, species_id, quantity,query_type="INSERT")
 
         messages.success(request, 'Attraction added successfully!')
         return redirect('attraction_actions')
@@ -1280,9 +1273,7 @@ def add_show(request):
         time = request.POST.get('time')
         revenue = request.POST.get('revenue')
         
-        print("-----\n\n time:",time,"\n\n-----")
-        # type cast time
-
+        
         # SQL query to insert new show
         query = "INSERT INTO show (attraction_id, tickets_sold, status,date,\"Time\", revenue) VALUES (%s, %s, %s, %s, %s, %s);"
         success = execute_query(query, attraction_id, tickets_sold, status, date, time, revenue, query_type="INSERT")

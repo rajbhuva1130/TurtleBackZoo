@@ -30,7 +30,7 @@
         <input type="text" id="diet" name="diet" class="form-control" value="{{ species.diet }}">
     
         <label for="monthly_food_cost">Monthly Food Cost:</label>
-        <input type="number" step="0.01" id="monthly_food_cost" name="monthly_food_cost" class="form-control" value="{{ species.monthly_food_cost }}" required>
+        <input type="number" step="0.01" id="monthly_food_cost" name="monthly_food_cost" class="form-control" value="{{ species.monthly_food_cost }}" min="0" required>
     
         <label for="species_type">Species Type:</label>
         <select id="species_type" name="species_type" class="form-control" onchange="updateSpeciesTypeFields()" required>
@@ -64,14 +64,14 @@
             fieldsDiv.innerHTML += `<label for="migratory">Migratory:</label><input type="checkbox" id="migratory" name="migratory" ${species.migratory ? 'checked' : ''}> `;
         } else if (selectedType === 'Mammal') {
             fieldsDiv.innerHTML += `<label for="fur_type">Fur Type:</label><input type="text" id="fur_type" name="fur_type" value="${species.fur_type || ''}"> `;
-            fieldsDiv.innerHTML += `<label for="gestation_period">Gestation Period:</label><input type="number" step="0.01" id="gestation_period" name="gestation_period" value="${species.gestation_period || ''}"> `;
+            fieldsDiv.innerHTML += `<label for="gestation_period">Gestation Period:</label><input type="number" step="0.01" id="gestation_period" name="gestation_period" value="${species.gestation_period || ''}"min="0" required> `;
         } else if (selectedType === 'Reptile') {
             fieldsDiv.innerHTML += `<label for="scale_type">Scale Type:</label><input type="text" id="scale_type" name="scale_type" value="${species.scale_type || ''}"> `;
             fieldsDiv.innerHTML += `<label for="temperature_range">Temperature Range:</label><input type="text" id="temperature_range" name="temperature_range" value="${species.temperature_range || ''}"> `;
             fieldsDiv.innerHTML += `<label for="venomous">Venomous:</label><input type="checkbox" id="venomous" name="venomous" ${species.venomous ? 'checked' : ''}> `;
         } else if (selectedType === 'Aquatic') {
             fieldsDiv.innerHTML += `<label for="finned_type">Finned Type:</label><input type="text" id="finned_type" name="finned_type" value="${species.finned_type || ''}"> `;
-            fieldsDiv.innerHTML += `<label for="average_length">Average Length:</label><input type="number" id="average_length" name="average_length" value="${species.average_length || ''}"> `;
+            fieldsDiv.innerHTML += `<label for="average_length">Average Length:</label><input type="number" id="average_length" name="average_length" value="${species.average_length || ''}" min="0" required> `;
         }
         // Add any other species types as needed.
     }
